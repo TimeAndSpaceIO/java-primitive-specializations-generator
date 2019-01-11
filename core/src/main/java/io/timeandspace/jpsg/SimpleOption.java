@@ -74,7 +74,6 @@ public final class SimpleOption implements Option {
         upperP = Pattern.compile("(?<![A-Z])" + upper + "(?![A-RT-Z].|S[A-Z])");
     }
 
-
     @Override
     public String intermediateReplace(String content, String dim) {
         if (contextOption)
@@ -85,7 +84,6 @@ public final class SimpleOption implements Option {
         content = upperP.matcher(content).replaceAll(intermediate.upper);
         return content;
     }
-
 
     @Override
     public String finalReplace(String content, String dim) {
@@ -98,18 +96,20 @@ public final class SimpleOption implements Option {
         return content;
     }
 
+    @Override
+    public String defaultValue() {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public String toString() {
         return title;
     }
 
-
     @Override
     public int hashCode() {
         return title.hashCode();
     }
-
 
     @Override
     public boolean equals(Object obj) {

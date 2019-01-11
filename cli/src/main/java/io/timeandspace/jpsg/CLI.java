@@ -82,13 +82,6 @@ public final class CLI {
                 splitter = NoSplitter.class)
         List<String> defaultContext = new ArrayList<>();
 
-        @Parameter(
-                names = "--objectIdStyle",
-                description = "Style of generating object identifiers from primitive templates. " +
-                        "CharFoo.CHAR_BAR.charBaz -> LONG: ObjectFoo.OBJECT_BAR.objectBaz, " +
-                        "SHORT: ObjFoo.OBJ_BAR.objBaz.")
-        ObjectType.IdentifierStyle objectIdStyle = ObjectType.IdentifierStyle.SHORT;
-
         @Parameter(names = {"-h", "--help"}, description = "Show this help", help = true)
         private boolean help;
     }
@@ -105,7 +98,6 @@ public final class CLI {
         Generator generator = new Generator();
         parsedArgs.processors.forEach(generator::addProcessor);
         generator.setDefaultTypes(parsedArgs.defaultTypes)
-                .setObjectIdStyle(parsedArgs.objectIdStyle)
                 .never(parsedArgs.never)
                 .include(parsedArgs.included)
                 .exclude(parsedArgs.excluded)

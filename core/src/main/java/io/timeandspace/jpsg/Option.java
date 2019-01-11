@@ -22,4 +22,6 @@ public interface Option {
     abstract String intermediateReplace(String content, String dim);
 
     abstract String finalReplace(String content, String dim);
+
+    String defaultValue();
 }

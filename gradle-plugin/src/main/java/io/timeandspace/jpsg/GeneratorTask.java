@@ -30,11 +30,6 @@ public class GeneratorTask extends ConventionTask {
 
     private final Generator g = new Generator();
 
-    public GeneratorTask setObjectIdStyle(ObjectType.IdentifierStyle objectIdStyle) {
-        g.setObjectIdStyle(objectIdStyle);
-        return this;
-    }
-
     public GeneratorTask setDefaultTypes(String defaultTypes) {
         g.setDefaultTypes(defaultTypes);
         return this;

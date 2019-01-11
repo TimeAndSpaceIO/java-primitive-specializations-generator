@@ -20,7 +20,6 @@ import io.timeandspace.jpsg.CheckingPattern.compile
 import io.timeandspace.jpsg.Dimensions.Parser.Companion.parseOptions
 import io.timeandspace.jpsg.GeneratorConstants.*
 import io.timeandspace.jpsg.MalformedTemplateException.Companion.near
-import io.timeandspace.jpsg.ObjectType.IdentifierStyle.SHORT
 import io.timeandspace.jpsg.RegexpUtils.removeSubGroupNames
 import io.timeandspace.jpsg.concurrent.ForkJoinTaskShim
 import io.timeandspace.jpsg.concurrent.ForkJoinTasks
@@ -43,8 +42,7 @@ class Generator {
     private var source: File? = null
     internal var target: File? = null
 
-    private var objectIdStyle: ObjectType.IdentifierStyle = SHORT
-    private var defaultTypes: MutableList<Option> = ArrayList(Arrays.asList<Option>(*PrimitiveType.values()))
+    private var defaultTypes: MutableList<Option> = ArrayList(PrimitiveType.NUMERIC_TYPES)
     private var dimensionsParser: Dimensions.Parser? = null
 
     private val processors = mutableListOf(
@@ -77,13 +75,8 @@ class Generator {
 
     private var firstProcessor: TemplateProcessor? = null
 
-    fun setObjectIdStyle(objectIdStyle: ObjectType.IdentifierStyle): Generator {
-        this.objectIdStyle = objectIdStyle
-        return this
-    }
-
     fun setDefaultTypes(defaultTypes: String): Generator {
-        this.defaultTypes = ArrayList(parseOptions(defaultTypes, objectIdStyle))
+        this.defaultTypes = ArrayList(parseOptions(defaultTypes))
         return this
     }
 
@@ -258,13 +251,7 @@ class Generator {
         if (isInit)
             return
         isInit = true
-        for (i in defaultTypes.indices) {
-            val defaultType = defaultTypes[i]
-            if (defaultType is ObjectType) {
-                defaultTypes[i] = ObjectType.get(objectIdStyle)
-            }
-        }
-        dimensionsParser = Dimensions.Parser(defaultTypes, objectIdStyle)
+        dimensionsParser = Dimensions.Parser(defaultTypes)
 
         defaultContext = Context.Builder().makeContext()
         for (context in with) {
@@ -277,7 +264,7 @@ class Generator {
         }
 
         excludedTypes = never
-                .flatMap({ options -> dimensionsParser!!.parseOptions(options) }).toList()
+                .flatMap({ options -> Dimensions.Parser.parseOptions(options) }).toList()
 
         permissiveConditions = included.map({ dimensionsParser!!.parseCLI(it) }).toList()
 

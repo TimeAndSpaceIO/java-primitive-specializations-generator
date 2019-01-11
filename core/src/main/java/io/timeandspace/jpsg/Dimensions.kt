@@ -23,7 +23,7 @@ import java.util.regex.Pattern
 
 class Dimensions private constructor(private val dimensions: LinkedHashMap<String, List<Option>>) {
 
-    class Parser internal constructor(private val defaultTypes: List<Option>, private val objectIdStyle: ObjectType.IdentifierStyle) {
+    class Parser internal constructor(private val defaultTypes: List<Option>) {
 
         internal fun parseClassName(className: String): Dimensions {
             val typeMatcher = PRIM_TITLE_P.matcher(className)
@@ -95,36 +95,31 @@ class Dimensions private constructor(private val dimensions: LinkedHashMap<Strin
             dimensions.put(dim, keyOptions)
         }
 
-        internal fun parseOptions(options: String): List<Option> {
-            return parseOptions(options, objectIdStyle)
-        }
-
-        private fun parseOption(opt: String): Option {
-            return parseOption(opt, objectIdStyle)
-        }
-
         companion object {
 
-            internal fun parseOptions(options: String, objectIdStyle: ObjectType.IdentifierStyle): List<Option> {
+            internal fun parseOptions(options: String): List<Option> {
                 val opts = options.split("\\|".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
                 val result = ArrayList<Option>()
                 for (option in opts) {
-                    result.add(parseOption(option, objectIdStyle))
+                    result.add(parseOption(option))
                 }
                 return result
             }
 
-            private fun parseOption(opt: String, objectIdStyle: ObjectType.IdentifierStyle): Option {
-                when (opt.toUpperCase()) {
-                    "INT" -> return PrimitiveType.INT
-                    "LONG" -> return PrimitiveType.LONG
-                    "FLOAT" -> return PrimitiveType.FLOAT
-                    "DOUBLE" -> return PrimitiveType.DOUBLE
-                    "OBJ", "OBJECT" -> return ObjectType.get(objectIdStyle)
-                    "BYTE" -> return PrimitiveType.BYTE
-                    "CHAR" -> return PrimitiveType.CHAR
-                    "SHORT" -> return PrimitiveType.SHORT
-                    else -> return SimpleOption(opt)
+            private fun parseOption(opt: String): Option {
+                val upperCaseOpt = opt.toUpperCase()
+                return when (upperCaseOpt) {
+                    "BOOL" -> PrimitiveType.BOOL
+                    "BOOLEAN" -> PrimitiveType.BOOLEAN
+                    "INT" -> PrimitiveType.INT
+                    "LONG" -> PrimitiveType.LONG
+                    "FLOAT" -> PrimitiveType.FLOAT
+                    "DOUBLE" -> PrimitiveType.DOUBLE
+                    "OBJ", "OBJECT" -> ObjectType.get(ObjectType.IdentifierStyle.valueOf(upperCaseOpt))
+                    "BYTE" -> PrimitiveType.BYTE
+                    "CHAR" -> PrimitiveType.CHAR
+                    "SHORT" -> PrimitiveType.SHORT
+                    else -> SimpleOption(opt)
                 }
             }
         }

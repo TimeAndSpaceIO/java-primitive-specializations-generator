@@ -23,9 +23,9 @@ import org.slf4j.LoggerFactory;
 public final class ObjectType implements Option {
     private static final Logger log = LoggerFactory.getLogger(ObjectType.class);
 
-    public static enum IdentifierStyle {
-        LONG("object", "Object", "OBJECT"),
-        SHORT("obj", "Obj", "OBJ");
+    public enum IdentifierStyle {
+        OBJECT("object", "Object", "OBJECT"),
+        OBJ("obj", "Obj", "OBJ");
 
         final String lower, title, upper;
         private final ObjectType typeForThisStyle;
@@ -55,10 +55,9 @@ public final class ObjectType implements Option {
         return content;
     }
 
-    public static String genericParamName(String dim) {
+    private static String genericParamName(String dim) {
         return dim.substring(0, 1).toUpperCase();
     }
-
 
     @Override
     public String finalReplace(String content, String dim) {
@@ -72,6 +71,10 @@ public final class ObjectType implements Option {
         return content;
     }
 
+    @Override
+    public String defaultValue() {
+        return "null";
+    }
 
     @Override
     public String toString() {
