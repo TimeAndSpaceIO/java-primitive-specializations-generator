@@ -1,0 +1,10 @@
+# Gradle
+build/
+.gradle
+
+# IntelliJ
+out/
+.idea/gradle.xml
+.idea/modules.xml
+.idea/workspace.xml
+*.iml
