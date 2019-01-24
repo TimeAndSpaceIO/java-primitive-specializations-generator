@@ -109,16 +109,10 @@ class Dimensions private constructor(private val dimensions: LinkedHashMap<Strin
             private fun parseOption(opt: String): Option {
                 val upperCaseOpt = opt.toUpperCase()
                 return when (upperCaseOpt) {
-                    "BOOL" -> PrimitiveType.BOOL
-                    "BOOLEAN" -> PrimitiveType.BOOLEAN
-                    "INT" -> PrimitiveType.INT
-                    "LONG" -> PrimitiveType.LONG
-                    "FLOAT" -> PrimitiveType.FLOAT
-                    "DOUBLE" -> PrimitiveType.DOUBLE
-                    "OBJ", "OBJECT" -> ObjectType.get(ObjectType.IdentifierStyle.valueOf(upperCaseOpt))
-                    "BYTE" -> PrimitiveType.BYTE
-                    "CHAR" -> PrimitiveType.CHAR
-                    "SHORT" -> PrimitiveType.SHORT
+                    in PrimitiveType.UPPER_CASE_NAME_TO_TYPE ->
+                        PrimitiveType.UPPER_CASE_NAME_TO_TYPE[upperCaseOpt]!!
+                    "OBJ", "OBJECT" ->
+                        ObjectType.get(ObjectType.IdStyle.valueOf(upperCaseOpt))
                     else -> SimpleOption(opt)
                 }
             }

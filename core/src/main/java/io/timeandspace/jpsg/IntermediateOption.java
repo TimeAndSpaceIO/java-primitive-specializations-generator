@@ -47,20 +47,37 @@ final class IntermediateOption {
                 .replace('k', 'к').replace('r', 'г');
     }
 
+    static class IdVariant {
+        final String lower;
+        final Pattern lowerP;
+
+        final String title;
+        final Pattern titleP;
+
+        final String upper;
+        final Pattern upperP;
+
+        IdVariant(String dim, String idVariant) {
+            lower = cyrillicLetters(format("#%s.lower.%s#", dim, idVariant));
+            lowerP = Pattern.compile(Pattern.quote(lower));
+
+            title = cyrillicLetters(format("#%s.title.%s#", dim, idVariant));
+            titleP = Pattern.compile(Pattern.quote(title));
+
+            upper = cyrillicLetters(format("#%s.upper.%s#", dim, idVariant));
+            upperP = Pattern.compile(Pattern.quote(upper));
+        }
+    }
+
     final String className;
     final Pattern classNameP;
 
     final String standalone;
     final Pattern standaloneP;
 
-    final String lower;
-    final Pattern lowerP;
-
-    final String title;
-    final Pattern titleP;
-
-    final String upper;
-    final Pattern upperP;
+    final IdVariant neutralIdVariant;
+    final IdVariant shortIdVariant;
+    final IdVariant longIdVariant;
 
     private IntermediateOption(String dim) {
         className = cyrillicLetters(format("#%s.className#", dim));
@@ -69,13 +86,8 @@ final class IntermediateOption {
         standalone = cyrillicLetters(format("#%s.standalone#", dim));
         standaloneP = Pattern.compile(Pattern.quote(standalone));
 
-        lower = cyrillicLetters(format("#%s.lower#", dim));
-        lowerP = Pattern.compile(Pattern.quote(lower));
-
-        title = cyrillicLetters(format("#%s.title#", dim));
-        titleP = Pattern.compile(Pattern.quote(title));
-
-        upper = cyrillicLetters(format("#%s.upper#", dim));
-        upperP = Pattern.compile(Pattern.quote(upper));
+        neutralIdVariant = new IdVariant(dim, "neutral");
+        shortIdVariant = new IdVariant(dim, "short");
+        longIdVariant = new IdVariant(dim, "long");
     }
 }

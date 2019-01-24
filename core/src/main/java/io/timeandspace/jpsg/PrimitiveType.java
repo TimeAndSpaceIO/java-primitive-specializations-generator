@@ -16,8 +16,7 @@
 
 package io.timeandspace.jpsg;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
@@ -29,9 +28,17 @@ public enum PrimitiveType implements Option {
     BOOLEAN ("boolean", "Boolean", "boolean", false),
     BYTE ("byte", "Byte"),
     CHAR ("char", "Character"),
+    CHARACTER("char", "Character", "character", true),
     SHORT ("short", "Short"),
 
     INT ("int", "Integer") {
+        @Override
+        public String formatValue(String value) {
+            return value;
+        }
+    },
+
+    INTEGER("int", "Integer", "integer", true) {
         @Override
         public String formatValue(String value) {
             return value;
@@ -50,12 +57,16 @@ public enum PrimitiveType implements Option {
         @Override
         public String intermediateReplace(String content, String dim) {
             content = super.intermediateReplace(content, dim);
+            // INT and INTEGER could be used interchangeably here because bits modifier replaces
+            // only standalone primitive (int) occurrences.
             content = INT.intermediateReplace(content, dim + ".bits");
             return content;
         }
 
         @Override
         public String finalReplace(String content, String dim) {
+            // INT and INTEGER could be used interchangeably here because bits modifier replaces
+            // only standalone primitive (int) occurrences.
             content = INT.finalReplace(content, dim + ".bits");
             content = super.finalReplace(content, dim);
             return content;
@@ -120,24 +131,57 @@ public enum PrimitiveType implements Option {
         }
     };
 
-    public static final List<PrimitiveType> NUMERIC_TYPES =
+    public static final List<PrimitiveType> NUMERIC_TYPES_WITH_SHORT_IDS =
             Arrays.asList(BYTE, CHAR, SHORT, INT, LONG, FLOAT, DOUBLE);
+
+    public static final Map<String, PrimitiveType> UPPER_CASE_NAME_TO_TYPE;
+    static {
+        UPPER_CASE_NAME_TO_TYPE = new HashMap<>();
+        for (PrimitiveType option : PrimitiveType.values()) {
+            UPPER_CASE_NAME_TO_TYPE.put(option.name(), option);
+        }
+    }
 
     public final boolean isNumeric;
     public final String className;
+    private final String fullyQualifiedClassName;
     final Pattern classNameP;
 
     public final String standalone;
     final Pattern standaloneP;
 
-    public final String lower;
-    final Pattern lowerP;
+    public static class IdReplacement {
+        public final String lower;
+        final Pattern lowerP;
 
-    public final String title;
-    final Pattern titleP;
+        public final String title;
+        final Pattern titleP;
 
-    public final String upper;
-    final Pattern upperP;
+        public final String upper;
+        final Pattern upperP;
+
+        IdReplacement(String lowerId) {
+            lower = lowerId;
+            // look around not to replace keyword substring inside words
+            // Uppercase ahead is ok -- consider Integer.intValue
+            // Special case - plural form (ints, chars)
+            lowerP = Pattern.compile(
+                    "(?<![A-Za-z])" + lowerId + "(?![a-rt-z].|s[a-z])");
+
+            title = lowerId.substring(0, 1).toUpperCase() + lowerId.substring(1);
+            // lookahead not to replace Int in ex. doInterrupt
+            // special case - plural form: addAllInts
+            titleP = Pattern.compile("\\$?" + title + "(?![a-rt-z].|s[a-z])");
+
+            upper = lowerId.toUpperCase();
+            // lookahead and lookbehind not to replace INT in ex. INTERLEAVE_CONSTANT
+            upperP = Pattern.compile("(?<![A-Z])" + upper + "(?![A-RT-Z].|S[A-Z])");
+        }
+    }
+
+    public final IdReplacement neutralIdReplacement;
+    public final IdReplacement shortIdReplacement;
+    public final IdReplacement longIdReplacement;
 
     /** Constructor for numeric primitives */
     PrimitiveType(String prim, String className) {
@@ -147,28 +191,31 @@ public enum PrimitiveType implements Option {
     PrimitiveType(String prim, String className, String lowerId, boolean isNumeric) {
         this.isNumeric = isNumeric;
         this.className = className;
-        // disallowed `.` behind because of inner and fully qualified classes, e. g. mypackage.Long
-        // allowed `#` ahead because of Javadoc links: {@link Integer#valueOf}
+        fullyQualifiedClassName = "java.lang." + className;
+        // Disallowed `.` behind because of inner and fully qualified classes, e. g. mypackage.Long.
+        // Fully qualified class name (e. g. `java.lang.Long`) is replaced separately in
+        // intermediateReplace() before replacing the following pattern.
+        // Allowed `#` ahead because of Javadoc links: {@link Integer#valueOf}.
         classNameP = Pattern.compile("(?<![A-Za-z0-9_$#.])" + className + "(?![A-Za-z0-9_$])");
 
         standalone = prim;
         standaloneP = Pattern.compile("(?<![A-Za-z0-9_$#])" + prim + "(?![A-Za-z0-9_$#])");
 
-        lower = lowerId;
-        // look around not to replace keyword substring inside words
-        // Uppercase ahead is ok -- consider Integer.intValue
-        // Special case - plural form (ints, chars)
-        lowerP = Pattern.compile(
-                "(?<![A-Za-z])" + prim + "(?![a-rt-z].|s[a-z])");
-
-        title = lowerId.substring(0, 1).toUpperCase() + prim.substring(1);
-        // lookahead not to replace Int in ex. doInterrupt
-        // special case - plural form: addAllInts
-        titleP = Pattern.compile("\\$?" + title + "(?![a-rt-z].|s[a-z])");
-
-        upper = lowerId.toUpperCase();
-        // lookahead and lookbehind not to replace INT in ex. INTERLEAVE_CONSTANT
-        upperP = Pattern.compile("(?<![A-Z])" + upper + "(?![A-RT-Z].|S[A-Z])");
+        neutralIdReplacement = new IdReplacement(lowerId);
+        String classNameBasedId = className.substring(0, 1).toLowerCase() + className.substring(1);
+        List<String> ids = Arrays.asList(prim, lowerId, classNameBasedId);
+        String shortestId = Collections.min(ids, StringLengthComparator.INSTANCE);
+        if (shortestId.length() < lowerId.length()) {
+            shortIdReplacement = new IdReplacement(shortestId);
+        } else {
+            shortIdReplacement = neutralIdReplacement;
+        }
+        String longestId = Collections.max(ids, StringLengthComparator.INSTANCE);
+        if (longestId.length() > lowerId.length()) {
+            longIdReplacement = new IdReplacement(longestId);
+        } else {
+            longIdReplacement = neutralIdReplacement;
+        }
     }
 
     String minValue() {
@@ -199,28 +246,50 @@ public enum PrimitiveType implements Option {
     @Override
     public String intermediateReplace(String content, String dim) {
         IntermediateOption intermediate = IntermediateOption.of(dim);
+        content = content.replace(fullyQualifiedClassName, intermediate.className);
         content = classNameP.matcher(content).replaceAll(intermediate.className);
         content = standaloneP.matcher(content).replaceAll(intermediate.standalone);
-        content = lowerP.matcher(content).replaceAll(intermediate.lower);
-        content = titleP.matcher(content).replaceAll(intermediate.title);
-        content = upperP.matcher(content).replaceAll(intermediate.upper);
+        content = intermediateReplaceId(content, neutralIdReplacement,
+                intermediate.neutralIdVariant);
+        if (shortIdReplacement != neutralIdReplacement) {
+            content = intermediateReplaceId(content, shortIdReplacement,
+                    intermediate.shortIdVariant);
+        }
+        if (longIdReplacement != neutralIdReplacement) {
+            content = intermediateReplaceId(content, longIdReplacement, intermediate.longIdVariant);
+        }
         return content;
     }
 
+    private static String intermediateReplaceId(String content, IdReplacement idReplacement,
+            IntermediateOption.IdVariant idVariant) {
+        content = idReplacement.lowerP.matcher(content).replaceAll(idVariant.lower);
+        content = idReplacement.titleP.matcher(content).replaceAll(idVariant.title);
+        content = idReplacement.upperP.matcher(content).replaceAll(idVariant.upper);
+        return content;
+    }
 
     @Override
     public String finalReplace(String content, String dim) {
         IntermediateOption intermediate = IntermediateOption.of(dim);
         content = intermediate.classNameP.matcher(content).replaceAll(className);
         content = intermediate.standaloneP.matcher(content).replaceAll(standalone);
-        content = intermediate.lowerP.matcher(content).replaceAll(lower);
-        content = intermediate.titleP.matcher(content).replaceAll(title);
-        content = intermediate.upperP.matcher(content).replaceAll(upper);
+        content = finalReplaceId(content, intermediate.neutralIdVariant, neutralIdReplacement);
+        content = finalReplaceId(content, intermediate.shortIdVariant, shortIdReplacement);
+        content = finalReplaceId(content, intermediate.longIdVariant, longIdReplacement);
+        return content;
+    }
+
+    private static String finalReplaceId(String content, IntermediateOption.IdVariant idVariant,
+            IdReplacement idReplacement) {
+        content = idVariant.lowerP.matcher(content).replaceAll(idReplacement.lower);
+        content = idVariant.titleP.matcher(content).replaceAll(idReplacement.title);
+        content = idVariant.upperP.matcher(content).replaceAll(idReplacement.upper);
         return content;
     }
 
     @Override
     public String toString() {
-        return title;
+        return neutralIdReplacement.title;
     }
 }

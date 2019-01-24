@@ -42,7 +42,8 @@ class Generator {
     private var source: File? = null
     internal var target: File? = null
 
-    private var defaultTypes: MutableList<Option> = ArrayList(PrimitiveType.NUMERIC_TYPES)
+    private var defaultTypes: MutableList<Option> =
+            ArrayList(PrimitiveType.NUMERIC_TYPES_WITH_SHORT_IDS)
     private var dimensionsParser: Dimensions.Parser? = null
 
     private val processors = mutableListOf(

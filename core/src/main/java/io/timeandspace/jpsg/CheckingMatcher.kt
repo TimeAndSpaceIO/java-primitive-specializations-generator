@@ -16,7 +16,9 @@
 
 package io.timeandspace.jpsg
 
-import java.util.regex.*
+import java.util.regex.MatchResult
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 
 class CheckingMatcher private constructor(
@@ -43,20 +45,12 @@ class CheckingMatcher private constructor(
         return targetMatcher.start(group)
     }
 
-    fun start(name: String): Int {
-        return targetMatcher.start(name)
-    }
-
     override fun end(): Int {
         return targetMatcher.end()
     }
 
     override fun end(group: Int): Int {
         return targetMatcher.end(group)
-    }
-
-    fun end(name: String): Int {
-        return targetMatcher.end(name)
     }
 
     override fun group(): String {

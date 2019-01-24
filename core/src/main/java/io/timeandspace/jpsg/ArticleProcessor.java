@@ -45,6 +45,7 @@ public final class ArticleProcessor extends TemplateProcessor {
                 letter = letterAfterArticle.group();
                 if (textAfterArticle.indexOf("code", letterAfterArticle.start()) ==
                         letterAfterArticle.start()) {
+                    // Skips "o", "d", "e" and finds the next letter.
                     for (int i = 0; i < 3; i++) {
                         letterAfterArticle.find();
                     }
@@ -53,7 +54,7 @@ public final class ArticleProcessor extends TemplateProcessor {
                 }
             } while (true);
             String article = articleM.group(1);
-            if ("aeiouy".contains(letter))
+            if ("aeiou".contains(letter))
                 article += "n";
             articleM.appendReplacement(sb, article);
         }

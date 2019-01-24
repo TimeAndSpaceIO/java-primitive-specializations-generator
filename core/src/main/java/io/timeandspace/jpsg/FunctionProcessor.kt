@@ -31,9 +31,11 @@ class FunctionProcessor : TemplateProcessor() {
         for (e in source) {
             val opt = e.value
             if (opt is PrimitiveType) {
-                titleToDim.put(opt.title, e.key)
+                // Using shortIdReplacement because function class names in JDK use "Int" rather
+                // than "Integer", e. g. ToIntFunction
+                titleToDim.put(opt.shortIdReplacement.title, e.key)
             } else if (opt is ObjectType) {
-                titleToDim.put(opt.idStyle.title, e.key)
+                titleToDim.put(opt.neutralIdStyle.title, e.key)
             }
         }
         var prevEnd = 0
@@ -128,7 +130,7 @@ class FunctionProcessor : TemplateProcessor() {
                     argDims[0] == argDims[1] &&
                     argDims[0] == outDim)) {
                 val infix = if (argDims.size == 1) "Unary" else "Binary"
-                return out.title + infix + "Operator"
+                return out.shortIdReplacement.title + infix + "Operator"
             }
             var prefix = ""
             var infix = ""
@@ -136,10 +138,10 @@ class FunctionProcessor : TemplateProcessor() {
             for (i in args.indices) {
                 val arg = args.get(i)
                 if (arg is PrimitiveType) {
-                    prefix += arg.title
+                    prefix += arg.shortIdReplacement.title
                 } else {
                     if (args.size > 1)
-                        prefix += (arg as ObjectType).idStyle.title
+                        prefix += (arg as ObjectType).neutralIdStyle.title
                     params.add("? super " + argDims[i].substring(0, 1).toUpperCase())
                 }
             }
@@ -150,7 +152,7 @@ class FunctionProcessor : TemplateProcessor() {
             }
             if (outDim != null) {
                 if (out is PrimitiveType) {
-                    prefix += "To" + out.title
+                    prefix += "To" + out.shortIdReplacement.title
                 } else {
                     params.add("? extends " + outDim.substring(0, 1).toUpperCase())
                 }

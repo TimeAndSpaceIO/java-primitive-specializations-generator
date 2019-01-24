@@ -23,14 +23,14 @@ import org.slf4j.LoggerFactory;
 public final class ObjectType implements Option {
     private static final Logger log = LoggerFactory.getLogger(ObjectType.class);
 
-    public enum IdentifierStyle {
+    public enum IdStyle {
         OBJECT("object", "Object", "OBJECT"),
         OBJ("obj", "Obj", "OBJ");
 
         final String lower, title, upper;
         private final ObjectType typeForThisStyle;
 
-        IdentifierStyle(String lower, String title, String upper) {
+        IdStyle(String lower, String title, String upper) {
             this.lower = lower;
             this.title = title;
             this.upper = upper;
@@ -39,14 +39,14 @@ public final class ObjectType implements Option {
         }
     }
 
-    static ObjectType get(IdentifierStyle idStyle) {
+    static ObjectType get(IdStyle idStyle) {
         return idStyle.typeForThisStyle;
     }
 
-    final IdentifierStyle idStyle;
+    final IdStyle neutralIdStyle;
 
-    private ObjectType(IdentifierStyle idStyle) {
-        this.idStyle = idStyle;
+    private ObjectType(IdStyle neutralIdStyle) {
+        this.neutralIdStyle = neutralIdStyle;
     }
 
     @Override
@@ -65,9 +65,17 @@ public final class ObjectType implements Option {
         String genericParamName = genericParamName(dim);
         content = intermediate.classNameP.matcher(content).replaceAll(genericParamName);
         content = intermediate.standaloneP.matcher(content).replaceAll(genericParamName);
-        content = intermediate.lowerP.matcher(content).replaceAll(idStyle.lower);
-        content = intermediate.titleP.matcher(content).replaceAll(idStyle.title);
-        content = intermediate.upperP.matcher(content).replaceAll(idStyle.upper);
+        content = finalReplaceId(content, intermediate.neutralIdVariant, neutralIdStyle);
+        content = finalReplaceId(content, intermediate.shortIdVariant, IdStyle.OBJ);
+        content = finalReplaceId(content, intermediate.longIdVariant, IdStyle.OBJECT);
+        return content;
+    }
+
+    private static String finalReplaceId(String content, IntermediateOption.IdVariant idVariant,
+            IdStyle idStyle) {
+        content = idVariant.lowerP.matcher(content).replaceAll(idStyle.lower);
+        content = idVariant.titleP.matcher(content).replaceAll(idStyle.title);
+        content = idVariant.upperP.matcher(content).replaceAll(idStyle.upper);
         return content;
     }
 

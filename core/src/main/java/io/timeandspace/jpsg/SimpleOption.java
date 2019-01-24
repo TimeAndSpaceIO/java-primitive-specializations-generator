@@ -79,9 +79,9 @@ public final class SimpleOption implements Option {
         if (contextOption)
             return content;
         IntermediateOption intermediate = IntermediateOption.of(dim);
-        content = lowerP.matcher(content).replaceAll(intermediate.lower);
-        content = titleP.matcher(content).replaceAll(intermediate.title);
-        content = upperP.matcher(content).replaceAll(intermediate.upper);
+        content = lowerP.matcher(content).replaceAll(intermediate.neutralIdVariant.lower);
+        content = titleP.matcher(content).replaceAll(intermediate.neutralIdVariant.title);
+        content = upperP.matcher(content).replaceAll(intermediate.neutralIdVariant.upper);
         return content;
     }
 
@@ -90,9 +90,9 @@ public final class SimpleOption implements Option {
         if (contextOption)
             return content;
         IntermediateOption intermediate = IntermediateOption.of(dim);
-        content = intermediate.lowerP.matcher(content).replaceAll(lower);
-        content = intermediate.titleP.matcher(content).replaceAll(title);
-        content = intermediate.upperP.matcher(content).replaceAll(upper);
+        content = intermediate.neutralIdVariant.lowerP.matcher(content).replaceAll(lower);
+        content = intermediate.neutralIdVariant.titleP.matcher(content).replaceAll(title);
+        content = intermediate.neutralIdVariant.upperP.matcher(content).replaceAll(upper);
         return content;
     }
 

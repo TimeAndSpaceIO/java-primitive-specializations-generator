@@ -60,7 +60,7 @@ public final class CLI {
                         "condition options for any dimension doesn't contain " +
                         "context option of that dimension. If no conditions are specified, code " +
                         "is generated for all target contexts. " +
-                        "Example: --if key=int|long,value=int|long",
+                        "Example: --include key=int|long,value=int|long",
                 splitter = NoSplitter.class)
         List<String> included = new ArrayList<>();
 
@@ -72,7 +72,7 @@ public final class CLI {
                         "condition options for any dimension doesn't contain " +
                         "context option of that dimension. If no conditions are specified, code " +
                         "is generated for all target contexts. " +
-                        "Example: --except key=long,value=int",
+                        "Example: --exclude key=long,value=int",
                 splitter = NoSplitter.class)
         List<String> excluded = new ArrayList<>();
 
@@ -96,7 +96,9 @@ public final class CLI {
             return;
         }
         Generator generator = new Generator();
-        parsedArgs.processors.forEach(generator::addProcessor);
+        for (String processor : parsedArgs.processors) {
+            generator.addProcessor(processor);
+        }
         generator.setDefaultTypes(parsedArgs.defaultTypes)
                 .never(parsedArgs.never)
                 .include(parsedArgs.included)

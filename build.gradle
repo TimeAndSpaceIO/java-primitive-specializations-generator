@@ -23,6 +23,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.6'
     }
 }
 
@@ -42,16 +43,30 @@ subprojects {
     apply plugin: 'signing'
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
+    if (project.name != 'gradle-plugin') {
+        apply plugin: 'ru.vyarus.animalsniffer'
+    }
 
     dependencies {
         implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+
+        // For Animal Sniffer
+        if (project.name != 'gradle-plugin') {
+            signature 'org.codehaus.mojo.signature:java17:1.0@signature'
+        }
+    }
+
+    def targetVersion = project.name != 'gradle-plugin' ? '1.7' : '1.8'
+    compileJava {
+        sourceCompatibility = targetVersion
+        targetCompatibility = targetVersion
     }
 
     compileKotlin {
         kotlinOptions {
-            jvmTarget = '1.8'
+            jvmTarget = '1.6'
         }
     }
 
