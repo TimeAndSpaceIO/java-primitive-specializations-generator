@@ -45,26 +45,40 @@ public final class DefinitionProcessor extends TemplateProcessor {
             matcher.appendSimpleReplacement(sb, "");
         }
         matcher.appendTail(sb);
-        postProcess(builder, source, target, replaceDefinitions(definitions, sb.toString()));
+        String withoutDefinitions = replaceDefinitions(definitions, source, target, sb.toString());
+        postProcess(builder, source, target, withoutDefinitions);
     }
 
-    private static String replaceDefinitions(Map<String, String> definitions, String template) {
+    private String replaceDefinitions(Map<String, String> definitions,
+            Context source, Context target, String template) {
         for (Map.Entry<String, String> e : definitions.entrySet()) {
             String name = e.getKey();
             String defPrefix = "/[\\*/]\\s*" + name + "\\s*[\\*/]";
             CheckingPattern defPattern = CheckingPattern.compile(defPrefix,
                     defPrefix + "/([^/]+?/[\\*/][\\*/]/)?+", 0);
             String body = e.getValue();
-            StringBuilder sb = new StringBuilder();
-            CheckingMatcher m = defPattern.matcher(template);
             Map<String, String> withoutCurrentDef = new HashMap<String, String>(definitions);
             withoutCurrentDef.remove(name);
+            String bodyWithoutDefinitions =
+                    replaceDefinitions(withoutCurrentDef, source, target, body);
+            if (name.equals("ClassName")) {
+                String className = postGenerate(source, target, bodyWithoutDefinitions);
+                Generator.setRedefinedClassName(className);
+            }
+            StringBuilder sb = new StringBuilder();
+            CheckingMatcher m = defPattern.matcher(template);
             while (m.find()) {
-                m.appendSimpleReplacement(sb, replaceDefinitions(withoutCurrentDef, body));
+                m.appendSimpleReplacement(sb, bodyWithoutDefinitions);
             }
             m.appendTail(sb);
             template = sb.toString();
         }
         return template;
+    }
+
+    private String postGenerate(Context source, Context target, String template) {
+        StringBuilder sb = new StringBuilder();
+        postProcess(sb, source, target, template);
+        return sb.toString();
     }
 }

@@ -30,9 +30,7 @@ import java.io.File
 import java.io.IOException
 import java.lang.String.format
 import java.util.*
-import java.util.AbstractMap.SimpleImmutableEntry
 import java.util.concurrent.Callable
-import java.util.concurrent.ExecutionException
 import java.util.regex.Pattern
 
 
@@ -275,7 +273,7 @@ class Generator {
     }
 
     private fun initProcessors() {
-        Collections.sort(processors) { p1, p2 -> p1.priority() - p2.priority() }
+        processors.sortWith(compareBy(TemplateProcessor::priority))
         var prev: TemplateProcessor? = null
         for (processor in processors) {
             processor.dimensionsParser = dimensionsParser
@@ -324,12 +322,25 @@ class Generator {
                 log.debug("Context filtered by file condition: {}", target)
                 continue
             }
-            val generatedFileName = generate(mainContext, target, sourceFileName)
-            val generatedFile = targetDir.resolve(generatedFileName)
+            var generatedFileName = generate(mainContext, target, sourceFileName)
+            var generatedFile = targetDir.resolve(generatedFileName)
             contextGenerationTasks.add(ForkJoinTasks.adapt(Callable<Unit> {
                 setCurrentGenerator(this@Generator)
                 setCurrentSourceFile(sourceFile)
+                setRedefinedClassName(null)
                 val generatedContent = generate(mainContext, target, content)
+                val redefinedClassName = getRedefinedClassName()
+                // `substringAfterLast('.')` in order to support service file names in resources:
+                // META-INF/services/com.mypackage.ByteShortType
+                val generatedClassName =
+                        generatedFileName.removeSuffix(".java").substringAfterLast('.')
+                if (redefinedClassName != null && generatedClassName != redefinedClassName) {
+                    log.info("Class name redefined: {} -> {}",
+                            generatedClassName, redefinedClassName)
+                    generatedFileName =
+                            generatedFileName.replace(generatedClassName, redefinedClassName)
+                    generatedFile = targetDir.resolve(generatedFileName)
+                }
                 if (generatedFile.exists()) {
                     if (generatedFile.isDirectory) {
                         throw IllegalStateException(
@@ -347,77 +358,6 @@ class Generator {
             }))
         }
         ForkJoinTasks.invokeAll(contextGenerationTasks)
-    }
-
-    fun generate(sourceFile: File, rawContent: String): Map<File, String> {
-        init()
-        return ForkJoinTasks.adapt(Callable<Map<File, String>> {
-            doGenerate(sourceFile, rawContent)
-        }).forkAndGet()
-    }
-
-    private fun doGenerate(sourceFile: File, rawContent: String): Map<File, String> {
-        var rawContent = rawContent
-        setCurrentGenerator(this)
-        setCurrentSourceFile(sourceFile)
-        log.info("Processing file: {}", sourceFile)
-        val sourceFileName = sourceFile.name
-        var targetDims = dimensionsParser!!.parseClassName(sourceFileName)
-        val fileDimsM = CONTEXT_START_P.matcher(rawContent)
-        if (fileDimsM.find() && fileDimsM.start() == 0) {
-            targetDims = dimensionsParser!!.parseForContext(
-                    getBlockGroup(fileDimsM.group(), CONTEXT_START_BLOCK_P, "dimensions"))
-            rawContent = rawContent.substring(fileDimsM.end()).trim({ it <= ' ' }) + "\n"
-        }
-        log.info("Target dimensions: {}", targetDims)
-        val targetContexts = targetDims.generateContexts()
-        val mainContext = defaultContext!!.join(targetContexts[0])
-        val fileCondM = COND_START_P.matcher(rawContent)
-        var fileCond: Condition? = null
-        if (fileCondM.find() && fileCondM.start() == 0) {
-            fileCond = Condition.parseCheckedCondition(
-                    getBlockGroup(fileCondM.group(), COND_START_BLOCK_P, "condition"),
-                    dimensionsParser!!, mainContext,
-                    rawContent, fileCondM.start())
-            rawContent = rawContent.substring(fileCondM.end()).trim({ it <= ' ' }) + "\n"
-        }
-        val content = rawContent
-
-        val contextGenerationTasks = ArrayList<ForkJoinTaskShim<Map.Entry<File, String>>>()
-        for (tc in targetContexts) {
-            if (!checkContext(tc)) {
-                log.debug("Context filtered by generator: {}", tc)
-                continue
-            }
-            val target = defaultContext!!.join(tc)
-            if (fileCond != null && !fileCond.check(target)) {
-                log.debug("Context filtered by file condition: {}", target)
-                continue
-            }
-            val generatedFileName = generate(mainContext, target, sourceFileName)
-            contextGenerationTasks.add(ForkJoinTasks.adapt(Callable<Map.Entry<File, String>> {
-                setCurrentGenerator(this@Generator)
-                setCurrentSourceFile(sourceFile)
-                val generatedContent = generate(mainContext, target, content)
-                log.info("Generated: {}", generatedFileName)
-                SimpleImmutableEntry(File(generatedFileName), generatedContent)
-            }))
-        }
-        ForkJoinTasks.invokeAll(contextGenerationTasks)
-        val result = HashMap<File, String>()
-        for (task in contextGenerationTasks) {
-            var e: Map.Entry<File, String>? = null
-            try {
-                e = task.get()
-            } catch (e1: InterruptedException) {
-                throw RuntimeException(e1)
-            } catch (e1: ExecutionException) {
-                throw RuntimeException(e1)
-            }
-
-            result.put(e!!.key, e!!.value)
-        }
-        return result
     }
 
     @Throws(IOException::class)
@@ -614,6 +554,17 @@ class Generator {
         @JvmStatic
         fun currentGenerator(): Generator {
             return currentGenerator.get()
+        }
+
+        private val redefinedClassName = ThreadLocal<String?>()
+
+        @JvmStatic
+        fun setRedefinedClassName(className: String?) {
+            redefinedClassName.set(className)
+        }
+
+        private fun getRedefinedClassName(): String? {
+            return redefinedClassName.get()
         }
 
         @JvmStatic
