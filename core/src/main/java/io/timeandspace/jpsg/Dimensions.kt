@@ -163,6 +163,7 @@ class Dimensions private constructor(private val dimensions: LinkedHashMap<Strin
 
         private val DIMENSION_P = RegexpUtils.compile(DIMENSION)
 
-        private val PRIM_TITLE_P = Pattern.compile("Double|Float|Int|Long|Byte|Short|Char")
+        private val PRIM_TITLE_P =
+                Pattern.compile("Double|Float|Int(eger)?|Long|Byte|Short|Char(acter)?")
     }
 }
