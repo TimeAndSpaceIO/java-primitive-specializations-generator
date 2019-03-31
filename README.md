@@ -275,8 +275,8 @@ and `/* define */` blocks.
 Options of non Java type dimensions intended for specialization must start with a capital letter:
 `/* with Foo|Bar myDimension */`, not `/* with foo|bar myDimension */` (but lowercase non Java type
 options can be used to mask outer dimensions - see the [section about `/* with */` blocks below](
-#with-blocks), and in conjunction with generics structures like `/*<>*/` - see the [corresponding
-section below](#generics-structures-extends-super)). Options can include several words in camel
+#-with--blocks), and in conjunction with generics structures like `/*<>*/` - see the [corresponding
+section below](#generics-structures--extends-super-)). Options can include several words in camel
 case: `/* with NoElements|SomeElements numElements */`. JPSG replaces textual occurrences of source
 non Java type options in three forms:
  - Camel case: "NoElements", "Foo".
@@ -670,7 +670,7 @@ neither `float` nor `double`.
 
 #### Template-level comments
 
-As mentioned in the section about [`/* define */ blocks`](#define-blocks), you can write something
+As mentioned in the section about [`/* define */ blocks`](#-define--blocks), you can write something
 that won't appear in the JPSG's output code using `/* comment */` definition:
 ```java
 //comment// Explain something about the following generation structures /**/
@@ -767,42 +767,42 @@ The JPSG Gradle plugin adds the following tasks to your project:
 
  - `generateJavaSpecializations` - [`JpsgTask`](#jpsgtask-configuration) <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Generates source code from production templates (stored in directory
- `src/main/javaTemplates/`)
+ `src/main/javaTemplates/`).
  - `generateResourceSpecializations` - [`JpsgTask`](#jpsgtask-configuration) <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Generates resource files from production resource templates (stored in
- directory `src/main/resourceTemplates/`)
+ directory `src/main/resourceTemplates/`).
  - `generateTestJavaSpecializations` - [`JpsgTask`](#jpsgtask-configuration) <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Generates source code from test templates (stored in directory
- `src/test/javaTemplates/`)
+ `src/test/javaTemplates/`).
  - `generateTestResourceSpecializations` - [`JpsgTask`](#jpsgtask-configuration) <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Generates resource files from test resource templates (stored in directory
-     `src/test/resourceTemplates/`)
- - <pre>generate<i>SourceSet<i>JavaSpecializations</pre> - [`JpsgTask`](#jpsgtask-configuration) <br>
+     `src/test/resourceTemplates/`).
+ - <code>generate<i>SourceSet</i>JavaSpecializations</code> - [`JpsgTask`](#jpsgtask-configuration) <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Generates source code from the templates for the given source set (stored
- in directory <pre>src/<i>sourceSet</i>/javaTemplates/</pre>)
- - <pre>generate<i>SourceSet<i>ResourceSpecializations</pre> - [`JpsgTask`](#jpsgtask-configuration) <br>
+ in directory <code>src/<i>sourceSet</i>/javaTemplates/</code>).
+ - <code>generate<i>SourceSet</i>ResourceSpecializations</code> - [`JpsgTask`](#jpsgtask-configuration) <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Generates resource files from the resource templates for the given source
- set (stored in directory <pre>src/<i>sourceSet</i>/resourceTemplates/</pre>)
+ set (stored in directory <code>src/<i>sourceSet</i>/resourceTemplates/</code>).
 
 The plugin adds the following dependencies to tasks added by the Java plugin:
 
-Task name                                   | Depends on
---------------------------------------------------------
-`compileJava`                               | `generateJavaSpecializations`
-`processResources`                          | `generateResourceSpecializations`
-`compileTestJava`                           | `generateTestJavaSpecializations`
-`processTestResources`                      | `generateTestResourceSpecializations`
-<pre>compile<i>SourceSet</i>Java</pre>      | <pre>generate<i>SourceSet</i>JavaSpecializations</pre>
-<pre>process<i>SourceSet</i>Resources</pre> | <pre>generate<i>SourceSet<i>ResourceSpecializations</pre>
+Task name                                     | Depends on
+--------------------------------------------- | ----------
+`compileJava`                                 | `generateJavaSpecializations`
+`processResources`                            | `generateResourceSpecializations`
+`compileTestJava`                             | `generateTestJavaSpecializations`
+`processTestResources`                        | `generateTestResourceSpecializations`
+<code>compile<i>SourceSet</i>Java</code>      | <code>generate<i>SourceSet</i>JavaSpecializations</code>
+<code>process<i>SourceSet</i>Resources</code> | <code>generate<i>SourceSet</i>ResourceSpecializations</code>
 
 ### Directory layout
 
-<pre>src/<i>sourceSet</i>/javaTemplates/</pre> (including `main` and `test` source sets) - JPSG
+<code>src/<i>sourceSet</i>/javaTemplates/</code> (including `main` and `test` source sets) - JPSG
 treat all files in this directory (including all files in subdirectories, recursively) as templates
 for generation of source code in the given source set. Template files should be organized in
 subdirectories repeating the package structure as well as for normal Java sources.
 
-<pre>src/<i>sourceSet</i>/resourceTemplates/</pre> - JPSG treats all files in this directory as
+<code>src/<i>sourceSet</i>/resourceTemplates/</code> - JPSG treats all files in this directory as
 templates for generation of resource files in the given source set.
 
 ### `JpsgTask` configuration
@@ -830,16 +830,17 @@ configure([generateJavaSpecializations, generateTestJavaSpecializations]) {
  attempts to deduce dimensions from the name of the template file, taking possible options from
  this `defaultTypes` configuration. See [more details](#with-default-types) in the section about
  `/* with */` blocks. <br>
- Format: [`<javaTypeOptions>`](#dimensions-bnf) <br>
+ Format: [`<javaTypeOptions>`](#dimensions-bnf). <br>
  Default value: `byte|char|short|int|long|float|double`
  - **`File source`** <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Source directory which JPSG traverses and considers all files in it as
  template files. <br>
- Default value: <pre>src/<i>sourceSet</i>/javaTemplates/</pre> or
- <pre>src/<i>sourceSet</i>/resourceTemplates/</pre>, see [directory layout](#directory-layout)
+ Default value: <code>src/<i>sourceSet</i>/javaTemplates/</code> or
+ <code>src/<i>sourceSet</i>/resourceTemplates/</code>, see the [directory layout
+ ](#directory-layout).
  - **`File target`** <br>
  &nbsp;&nbsp;&nbsp;&nbsp;Target directory where JPSG puts specialized sources. <br>
- Default value: `${project.buildDir}/generated-src/jpsg/${sourceSet.name}`
+ Default value: `${project.buildDir}/generated-src/jpsg/${sourceSet.name}`.
 
 #### Methods
  - **`never(String... options)`** <br>
@@ -848,7 +849,7 @@ configure([generateJavaSpecializations, generateTestJavaSpecializations]) {
  defined inside template files at any level of nesting, JPSG will skip generating code for the
  specified options. `never()` may be called several times, adding more options to skip.
  
- `options` parameter format: [`<options>`](#dimensions-bnf)
+ `options` parameter format: [`<options>`](#dimensions-bnf).
  
  Example:
  ```groovy
@@ -880,7 +881,7 @@ configure([generateJavaSpecializations, generateTestJavaSpecializations]) {
  dimension options consistently in all template files. `exclude()` allows to not write the same
  `/* if */` block in the beginning of each template file.
  
- `conditions` parameter format: [`<simple-condition>`](#conditions-bnf)
+ `conditions` parameter format: [`<simple-condition>`](#conditions-bnf).
  
  Example:
  ```groovy
@@ -910,7 +911,7 @@ configure([generateJavaSpecializations, generateTestJavaSpecializations]) {
  ](#print-the-current-option-for-a-dimension) to "macro print" something in template files during
  generation.
  
- `dimensions` parameter format: [`<dimensions>`](#dimensions-bnf), every dimension must have only
+ `dimensions` parameter format: [`<dimensions>`](#dimensions-bnf). Every dimension must have only
  a single option.
  
  Example:
@@ -918,4 +919,3 @@ configure([generateJavaSpecializations, generateTestJavaSpecializations]) {
  with("Enabled extraChecks Disabled advancedStatistics", "Assert extraCheckStyle")
  with "java8 minSupportedJavaVersion"
  ```
-
