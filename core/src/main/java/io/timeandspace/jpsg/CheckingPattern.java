@@ -16,16 +16,20 @@
 
 package io.timeandspace.jpsg;
 
+import org.intellij.lang.annotations.RegExp;
+
 import java.util.regex.Pattern;
 
 
 public final class CheckingPattern {
 
-    public static CheckingPattern compile(String checkingRegex, String targetRegex) {
+    public static CheckingPattern compile(@RegExp String checkingRegex,
+            @RegExp String targetRegex) {
         return new CheckingPattern(checkingRegex, targetRegex, RegexpUtils.STANDARD_TEMPLATE_FLAGS);
     }
 
-    public static CheckingPattern compile(String checkingRegex, String targetRegex, int flags) {
+    public static CheckingPattern compile(@RegExp String checkingRegex,
+            @RegExp String targetRegex, int flags) {
         return new CheckingPattern(checkingRegex, targetRegex, flags);
     }
 

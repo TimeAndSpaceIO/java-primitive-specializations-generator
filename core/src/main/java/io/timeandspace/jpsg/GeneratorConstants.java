@@ -19,6 +19,7 @@ package io.timeandspace.jpsg;
 import java.util.regex.Pattern;
 
 import static io.timeandspace.jpsg.Condition.CONDITION;
+import static io.timeandspace.jpsg.Dimensions.DIMENSIONS;
 import static java.lang.String.format;
 
 /**
@@ -26,8 +27,6 @@ import static java.lang.String.format;
  * the constants defined here should belong to the {@link Generator}'s companion object.
  */
 public class GeneratorConstants {
-    public static final String DIMENSIONS =
-            format("(?<dimensions>(\\s*%s\\s*)+)", Dimensions.DIMENSION);
 
     static final String COND_START = format("if\\s*(?<condition>%s)", CONDITION);
     static final Pattern COND_START_BLOCK_P = Generator.wrapBlock(COND_START);

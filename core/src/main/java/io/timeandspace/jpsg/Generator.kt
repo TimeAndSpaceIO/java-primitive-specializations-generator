@@ -55,33 +55,63 @@ class Generator {
             RawModifierProcessor(),
             BitsModifierPreProcessor(),
             BitsModifierPostProcessor(),
-            ArticleProcessor(),
+            AAnProcessor(),
             OverviewProcessor(),
             PrintProcessor()
     )
 
-    private val with = ArrayList<String>()
+    private class UnparsedDimensions(
+            val dimensions: String,
+            val parse: (Dimensions.Parser, String) -> Dimensions)
+
+    private fun Dimensions.Parser.parse(unparsedDimensions: UnparsedDimensions): Dimensions {
+        return unparsedDimensions.parse(this, unparsedDimensions.dimensions)
+    }
+
+    private val with = ArrayList<UnparsedDimensions>()
     private var defaultContext: Context? = null
 
     private val never = ArrayList<String>()
     private var excludedTypes: List<Option>? = null
 
-    private val included = ArrayList<String>()
+    private val included = ArrayList<UnparsedDimensions>()
     private var permissiveConditions: List<Dimensions>? = null
 
-    private val excluded = ArrayList<String>()
+    private val excluded = ArrayList<UnparsedDimensions>()
     private var prohibitingConditions: List<Dimensions>? = null
 
     private var firstProcessor: TemplateProcessor? = null
 
     fun setDefaultTypes(defaultTypes: String): Generator {
-        this.defaultTypes = ArrayList(parseOptions(defaultTypes))
+        val defaultTypes = ArrayList(parseOptions(defaultTypes))
+        for (option in defaultTypes) {
+            if (option is SimpleOption) {
+                throw IllegalArgumentException(
+                        "Simple options like $option are not allowed in defaultTypes configuration")
+            }
+        }
+        this.defaultTypes = defaultTypes
+        return this
+    }
+
+    fun withCLI(defaultContext: Iterable<String>) : Generator {
+        for (cxt in defaultContext) {
+            with.add(UnparsedDimensions(cxt, Dimensions.Parser::parseCLI))
+        }
         return this
     }
 
     fun with(defaultContext: Iterable<String>): Generator {
         for (cxt in defaultContext) {
-            with.add(cxt)
+            val withDimensions: Dimensions = checkingDimensionsParser.parseForContext(cxt)
+            for ((dim, options) in withDimensions.dimensions) {
+                if (options.size > 1) {
+                    throw IllegalArgumentException(
+                            "with() accepts only dimensions with a single option, $dim has $options"
+                    )
+                }
+            }
+            with.add(UnparsedDimensions(cxt, Dimensions.Parser::parseForContext))
         }
         return this
     }
@@ -136,9 +166,16 @@ class Generator {
         return never(Arrays.asList(*options))
     }
 
+    fun includeCLI(conditions: Iterable<String>): Generator {
+        for (condition in conditions) {
+            included.add(UnparsedDimensions(condition, Dimensions.Parser::parseCLI))
+        }
+        return this
+    }
+
     fun include(conditions: Iterable<String>): Generator {
         for (condition in conditions) {
-            included.add(condition)
+            included.add(UnparsedDimensions(condition, Dimensions.Parser::parseForContext))
         }
         return this
     }
@@ -147,9 +184,16 @@ class Generator {
         return include(Arrays.asList(*conditions))
     }
 
+    fun excludeCLI(conditions: Iterable<String>): Generator {
+        for (condition in conditions) {
+            excluded.add(UnparsedDimensions(condition, Dimensions.Parser::parseCLI))
+        }
+        return this
+    }
+
     fun exclude(conditions: Iterable<String>): Generator {
         for (condition in conditions) {
-            excluded.add(condition)
+            excluded.add(UnparsedDimensions(condition, Dimensions.Parser::parseForContext))
         }
         return this
     }
@@ -254,7 +298,7 @@ class Generator {
 
         defaultContext = Context.Builder().makeContext()
         for (context in with) {
-            val contexts = dimensionsParser!!.parseCLI(context).generateContexts()
+            val contexts = dimensionsParser!!.parse(context).generateContexts()
             if (contexts.size > 1) {
                 throw IllegalArgumentException(
                         "Default context should have only trivial dimensions")
@@ -265,9 +309,9 @@ class Generator {
         excludedTypes = never
                 .flatMap({ options -> Dimensions.Parser.parseOptions(options) }).toList()
 
-        permissiveConditions = included.map({ dimensionsParser!!.parseCLI(it) }).toList()
+        permissiveConditions = included.map({ dimensionsParser!!.parse(it) }).toList()
 
-        prohibitingConditions = excluded.map({ dimensionsParser!!.parseCLI(it) }).toList()
+        prohibitingConditions = excluded.map({ dimensionsParser!!.parse(it) }).toList()
 
         initProcessors()
     }
@@ -329,7 +373,7 @@ class Generator {
                 setCurrentSourceFile(sourceFile)
                 setRedefinedClassName(null)
                 val generatedContent = generate(mainContext, target, content)
-                val redefinedClassName = getRedefinedClassName()
+                val redefinedClassName: String? = getRedefinedClassName()
                 // `substringAfterLast('.')` in order to support service file names in resources:
                 // META-INF/services/com.mypackage.ByteShortType
                 val generatedClassName =
@@ -370,8 +414,8 @@ class Generator {
     }
 
     private fun checkContext(target: Context): Boolean {
-        for (e in target) {
-            if (excludedTypes!!.contains(e.value))
+        for ((_, option) in target) {
+            if (excludedTypes!!.contains(option))
                 return false
         }
         if (!checkPermissive(target))
@@ -386,7 +430,6 @@ class Generator {
     }
 
     private fun checkPermissive(target: Context): Boolean {
-        checkPermissive@
         if (!permissiveConditions!!.isEmpty()) {
             for (permissiveCondition in permissiveConditions!!) {
                 if (permissiveCondition.checkAsCondition(target))
@@ -536,13 +579,16 @@ class Generator {
     companion object {
         private val log = LoggerFactory.getLogger(Generator::class.java)
 
+        @JvmStatic
+        private val checkingDimensionsParser: Dimensions.Parser = Dimensions.Parser(emptyList())
+
         private val currentSource = ThreadLocal<File>()
         fun setCurrentSourceFile(source: File) {
             currentSource.set(source)
         }
 
         @JvmStatic
-        fun currentSourceFile(): File {
+        fun currentSourceFile(): File? {
             return currentSource.get()
         }
 

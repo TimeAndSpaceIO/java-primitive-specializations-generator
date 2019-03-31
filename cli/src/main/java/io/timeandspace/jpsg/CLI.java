@@ -40,7 +40,7 @@ public final class CLI {
 
         @Parameter(
                 names = "--defaultTypes",
-                description = "Set of options used to populate target contexts in templates " +
+                description = "Set of Java types used to populate target contexts in templates " +
                         "which doesn't have /* with */ statement at the first line " +
                         "and template file name contains primitive title")
         String defaultTypes = "byte|char|short|int|long|float|double";
@@ -57,7 +57,7 @@ public final class CLI {
                 description = "Code is generated for target context if it is permitted by this " +
                         "condition or any other similar condition. Context is prohibited " +
                         "by condition if it contains all dimensions of the condition and " +
-                        "condition options for any dimension doesn't contain " +
+                        "condition options for any dimension don't contain " +
                         "context option of that dimension. If no conditions are specified, code " +
                         "is generated for all target contexts. " +
                         "Example: --include key=int|long,value=int|long",
@@ -86,9 +86,7 @@ public final class CLI {
         private boolean help;
     }
 
-    public static void main(String[] args)
-            throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-            IOException {
+    public static void main(String[] args) throws IOException {
         Args parsedArgs = new Args();
         JCommander jc = new JCommander(parsedArgs, args);
         if (parsedArgs.help) {
@@ -101,9 +99,9 @@ public final class CLI {
         }
         generator.setDefaultTypes(parsedArgs.defaultTypes)
                 .never(parsedArgs.never)
-                .include(parsedArgs.included)
-                .exclude(parsedArgs.excluded)
-                .with(parsedArgs.defaultContext)
+                .includeCLI(parsedArgs.included)
+                .excludeCLI(parsedArgs.excluded)
+                .withCLI(parsedArgs.defaultContext)
                 .setSource(parsedArgs.roots.get(0))
                 .setTarget(parsedArgs.roots.get(1))
                 .generate();

@@ -17,12 +17,27 @@
 package io.timeandspace.jpsg;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class FloatingWrappingProcessor extends TemplateProcessor {
 
-    private static final String WRAPPING_PREFIX = "/[\\*/]\\s*(?<op>wrap|unwrap)";
+    private static final String WRAPPING_PREFIX = "/[\\*/]\\s*(?<op>wrap|unwrap|unwrapRaw)";
     private static final CheckingPattern WRAPPING_P = CheckingPattern.compile(WRAPPING_PREFIX,
             WRAPPING_PREFIX + "\\s+(?<dim>[a-z0-9]+)\\s*[\\*/]/" +
             "((?<closed>(?<closedBody>[^/]+)/[\\*/][\\*/]/)|(?<openBody>[^\\s\\{\\};/\\*]+))");
+
+    private static final Map<String, String> opsToFloatMethods = new HashMap<>();
+    private static final Map<String, String> opsToDoubleMethods = new HashMap<>();
+    static {
+        opsToFloatMethods.put("wrap", "intBitsToFloat");
+        opsToFloatMethods.put("unwrap", "floatToIntBits");
+        opsToFloatMethods.put("unwrapRaw", "floatToRawIntBits");
+
+        opsToDoubleMethods.put("wrap", "longBitsToDouble");
+        opsToDoubleMethods.put("unwrap", "doubleToLongBits");
+        opsToDoubleMethods.put("unwrapRaw", "doubleToRawLongBits");
+    }
 
     @Override
     protected void process(StringBuilder builder, Context source, Context target, String template) {
@@ -31,13 +46,11 @@ public final class FloatingWrappingProcessor extends TemplateProcessor {
         while (m.find()) {
             String body = m.group(m.group("closed") != null ? "closedBody" : "openBody");
             Option targetType = target.getOption(m.group("dim"));
-            boolean wrap = m.group("op").equals("wrap");
             String repl = body;
             if (targetType == PrimitiveType.FLOAT) {
-                repl = "Float." + (wrap ? "intBitsToFloat" : "floatToIntBits") + "(" + repl + ")";
+                repl = "Float." + opsToFloatMethods.get(m.group("op")) + "(" + repl + ")";
             } else if (targetType == PrimitiveType.DOUBLE) {
-                repl = "Double." + (wrap ? "longBitsToDouble" : "doubleToLongBits") + "(" +
-                        repl + ")";
+                repl = "Double." + opsToDoubleMethods.get(m.group("op")) + "(" + repl + ")";
             }
             m.appendSimpleReplacement(sb, repl);
         }

@@ -22,3 +22,12 @@ dependencies {
     api gradleApi()
     implementation project(':core')
 }
+
+tasks.withType(Jar) {
+    manifest {
+        attributes(
+                "Implementation-Title": "Gradle Plugin",
+                "Implementation-Version": version
+        )
+    }
+}

@@ -170,12 +170,12 @@ public final class JavaPrimitiveSpecializationsGenerationPlugin implements Plugi
         final File outputDirectory = new File(outputDirectoryName);
         f.getSourceDirectorySet(sourceSet).srcDir(outputDirectory);
 
-        project.getTasks().register(taskName, GeneratorTask.class, generatorTask -> {
-            generatorTask.setDescription(String.format(f.taskDescriptionFormat(), sourceSet.getName()));
+        project.getTasks().register(taskName, JpsgTask.class, jpsgTask -> {
+            jpsgTask.setDescription(String.format(f.taskDescriptionFormat(), sourceSet.getName()));
             // 4) set up convention mapping for default sources
             // (allows user to not have to specify)
-            generatorTask.setSource(srcDir);
-            generatorTask.setTarget(outputDirectoryName);
+            jpsgTask.setSource(srcDir);
+            jpsgTask.setTarget(outputDirectoryName);
         });
 
         // 5) register fact that antlr should be run before compiling

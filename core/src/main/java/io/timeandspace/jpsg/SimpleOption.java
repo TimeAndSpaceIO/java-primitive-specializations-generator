@@ -16,7 +16,6 @@
 
 package io.timeandspace.jpsg;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -39,7 +38,8 @@ public final class SimpleOption implements Option {
     }
     // for options used only to enrich context, not for replacing
     private final boolean contextOption;
-    final String title;
+    private final String opt;
+    String title;
     Pattern titleP;
 
     String lower;
@@ -48,29 +48,18 @@ public final class SimpleOption implements Option {
     String upper;
     Pattern upperP;
 
-    public SimpleOption(String title) {
-        this.title = title;
-        if (contextOption = isContextOption(title)) {
+    public SimpleOption(String opt) {
+        this.opt = opt;
+        if (contextOption = isContextOption(opt)) {
             return;
         }
+        this.title = StringUtils.capitalize(opt);
         titleP = Pattern.compile(title + "(?![a-rt-z].|s[a-z])");
 
-        lower = title.substring(0, 1).toLowerCase() + title.substring(1);
+        lower = StringUtils.uncapitalize(opt);
         lowerP = Pattern.compile("(?<![A-Za-z])" + lower + "(?![a-rt-z].|s[a-z])");
 
-        Matcher m = Pattern.compile("[A-Z]([a-z0-9]*+)").matcher(title);
-        String upper = "";
-        int parts = 0;
-        while (m.find()) {
-            upper += (parts == 0 ? "" : "_") + m.group().toUpperCase();
-            parts++;
-        }
-        if (upper.length() != title.length() + parts - 1) {
-            throw new IllegalArgumentException(
-                    "Source file: " + Generator.Companion.currentSourceFile() + "\n" +
-                    "Simple options should be CamelCased, " + title + " is given");
-        }
-        this.upper = upper;
+        upper = StringUtils.toUnderscoredCase(title);
         upperP = Pattern.compile("(?<![A-Z])" + upper + "(?![A-RT-Z].|S[A-Z])");
     }
 
@@ -103,17 +92,17 @@ public final class SimpleOption implements Option {
 
     @Override
     public String toString() {
-        return title;
+        return opt;
     }
 
     @Override
     public int hashCode() {
-        return title.hashCode();
+        return opt.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         return this == obj ||
-                obj instanceof SimpleOption && title.equals(((SimpleOption) obj).title);
+                obj instanceof SimpleOption && opt.equals(((SimpleOption) obj).opt);
     }
 }

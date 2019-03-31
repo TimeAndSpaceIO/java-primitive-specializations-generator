@@ -168,7 +168,7 @@ public enum PrimitiveType implements Option {
             lowerP = Pattern.compile(
                     "(?<![A-Za-z])" + lowerId + "(?![a-rt-z].|s[a-z])");
 
-            title = lowerId.substring(0, 1).toUpperCase() + lowerId.substring(1);
+            title = StringUtils.capitalize(lowerId);
             // lookahead not to replace Int in ex. doInterrupt
             // special case - plural form: addAllInts
             titleP = Pattern.compile("\\$?" + title + "(?![a-rt-z].|s[a-z])");
@@ -202,7 +202,7 @@ public enum PrimitiveType implements Option {
         standaloneP = Pattern.compile("(?<![A-Za-z0-9_$#])" + prim + "(?![A-Za-z0-9_$#])");
 
         neutralIdReplacement = new IdReplacement(lowerId);
-        String classNameBasedId = className.substring(0, 1).toLowerCase() + className.substring(1);
+        String classNameBasedId = StringUtils.uncapitalize(className);
         List<String> ids = Arrays.asList(prim, lowerId, classNameBasedId);
         String shortestId = Collections.min(ids, StringLengthComparator.INSTANCE);
         if (shortestId.length() < lowerId.length()) {

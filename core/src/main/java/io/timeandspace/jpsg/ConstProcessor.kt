@@ -18,7 +18,24 @@ package io.timeandspace.jpsg
 
 import io.timeandspace.jpsg.RegexpUtils.JAVA_ID_OR_CONST
 
-
+/**
+ * Replaces // const <dimension name> default|min|max|<integer number> // ... // endconst //,
+ * e. g. "// const key default //(char) 0// endconst //", with appropriate value:
+ * default -> "0" for numeric primitive types, "false" for boolean, "null" for object.
+ * min -> BoxedType.MIN_VALUE for integral numeric types, NEGATIVE_INFINITY for float and double.
+ * max -> BoxedType.MAX_VALUE for integral numeric types, POSITIVE_INFINITY for float and double.
+ * integer number, e. g. 5 ->
+ *  "(byte) 5" for byte,
+ *  "(short) 5" for short,
+ *  "(char) 5" for char,
+ *  "5" for int,
+ *  "5L" for long,
+ *  "5.0f" for float,
+ *  "5.0" for double.
+ *
+ * If // const ... // if followed by a number or a java variable identifier, // endconst // could be
+ * omitted, e. g. "// const value 0 //0"
+ */
 class ConstProcessor : TemplateProcessor() {
 
     override fun process(builder: StringBuilder, source: Context, target: Context, template: String) {

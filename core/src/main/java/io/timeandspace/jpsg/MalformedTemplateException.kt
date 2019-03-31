@@ -39,7 +39,7 @@ class MalformedTemplateException private constructor(message: String) : RuntimeE
             val messageNear = StringBuilder()
 
             messageNear.append("Source file: " + Generator.currentSourceFile() + "\n")
-            messageNear.append(message + ":\n")
+            messageNear.append("$message:\n")
 
             val s = input.toString()
             val lines = lines(s)

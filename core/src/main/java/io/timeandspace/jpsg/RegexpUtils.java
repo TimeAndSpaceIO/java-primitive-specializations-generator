@@ -16,6 +16,8 @@
 
 package io.timeandspace.jpsg;
 
+import org.intellij.lang.annotations.RegExp;
+
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.*;
@@ -27,11 +29,11 @@ public final class RegexpUtils {
 
     public static final int STANDARD_TEMPLATE_FLAGS = CASE_INSENSITIVE | DOTALL | MULTILINE;
 
-    public static Pattern compile(String regex) {
+    public static Pattern compile(@RegExp String regex) {
         return Pattern.compile(regex, STANDARD_TEMPLATE_FLAGS);
     }
 
-    public static String removeSubGroupNames(String regex) {
+    public static String removeSubGroupNames(@RegExp String regex) {
         return regex.replaceAll("\\?<[a-z]+?>", "");
     }
 

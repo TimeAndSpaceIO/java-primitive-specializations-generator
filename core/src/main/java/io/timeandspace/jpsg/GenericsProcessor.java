@@ -33,7 +33,7 @@ public final class GenericsProcessor extends TemplateProcessor {
             Option viewOption = context.getOption(viewDim);
             if (viewOption != null) {
                 options = Arrays.<Map.Entry<String, Option>>asList(
-                        new AbstractMap.SimpleImmutableEntry<String, Option>(viewDim, viewOption));
+                        new AbstractMap.SimpleImmutableEntry<>(viewDim, viewOption));
             }
         }
         return options;

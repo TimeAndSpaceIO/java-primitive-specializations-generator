@@ -19,12 +19,14 @@ package io.timeandspace.jpsg;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-public final class ArticleProcessor extends TemplateProcessor {
+/**
+ * Specified in the section "A/An" in the tutorial.
+ */
+public final class AAnProcessor extends TemplateProcessor {
     public static final int PRIORITY = PrimitiveTypeModifierPostProcessor.getPRIORITY() - 10;
 
-    private static final Pattern ARTICLE_PATTERN = RegexpUtils.compile("/[\\*/](a)[\\*/]/");
-    private static final Pattern LETTER_PATTERN = RegexpUtils.compile("[a-z]");
+    private static final Pattern ARTICLE_PATTERN = RegexpUtils.compile("/[\\*/]an?[\\*/]/");
+    private static final Pattern LETTER_PATTERN = RegexpUtils.compile("[a-zA-Z]");
 
     @Override
     protected int priority() {
@@ -38,14 +40,14 @@ public final class ArticleProcessor extends TemplateProcessor {
         while (articleM.find()) {
             String textAfterArticle = template.substring(articleM.end());
             Matcher letterAfterArticle = LETTER_PATTERN.matcher(textAfterArticle);
-            String letter;
+            char letter;
             do {
                 if (!letterAfterArticle.find())
                     throw MalformedTemplateException.near(template, articleM.end());
-                letter = letterAfterArticle.group();
-                if (textAfterArticle.indexOf("code", letterAfterArticle.start()) ==
-                        letterAfterArticle.start()) {
-                    // Skips "o", "d", "e" and finds the next letter.
+                letter = textAfterArticle.charAt(letterAfterArticle.start());
+                if (containsAtIndex(textAfterArticle, letterAfterArticle.start(), "code") ||
+                        containsAtIndex(textAfterArticle, letterAfterArticle.start(), "link")) {
+                    // Skips "ode" or "ink" and finds the next letter.
                     for (int i = 0; i < 3; i++) {
                         letterAfterArticle.find();
                     }
@@ -53,12 +55,18 @@ public final class ArticleProcessor extends TemplateProcessor {
                     break;
                 }
             } while (true);
-            String article = articleM.group(1);
-            if ("aeiou".contains(letter))
-                article += "n";
+            String article = isVowel(letter) ? "an" : "a";
             articleM.appendReplacement(sb, article);
         }
         articleM.appendTail(sb);
         postProcess(builder, source, target, sb.toString());
+    }
+
+    private static boolean containsAtIndex(String s, int startIndex, String part) {
+        return s.indexOf(part, startIndex) == startIndex;
+    }
+
+    private static boolean isVowel(char c) {
+        return "aeiouAEIOU".indexOf(c) >= 0;
     }
 }

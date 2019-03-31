@@ -18,102 +18,105 @@ package io.timeandspace.jpsg;
 
 import io.timeandspace.jpsg.function.Predicate;
 import io.timeandspace.jpsg.function.UnaryOperator;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ConventionTask;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
 
-public class GeneratorTask extends ConventionTask {
+public class JpsgTask extends ConventionTask {
 
     private final Generator g = new Generator();
+    private FileCollection inputFiles;
 
-    public GeneratorTask setDefaultTypes(String defaultTypes) {
+    public JpsgTask setDefaultTypes(String defaultTypes) {
         g.setDefaultTypes(defaultTypes);
         return this;
     }
 
-    public GeneratorTask with(Iterable<String> defaultContext) {
+    public JpsgTask with(Iterable<String> defaultContext) {
         g.with(defaultContext);
         return this;
     }
 
-    public GeneratorTask with(String... defaultContext) {
+    public JpsgTask with(String... defaultContext) {
         g.with(defaultContext);
         return this;
     }
 
-    public GeneratorTask addToDefaultContext(String... defaultContext) {
+    public JpsgTask addToDefaultContext(String... defaultContext) {
         return with(defaultContext);
     }
 
-    public GeneratorTask addProcessor(TemplateProcessor processor) {
+    public JpsgTask addProcessor(TemplateProcessor processor) {
         g.addProcessor(processor);
         return this;
     }
 
-    public GeneratorTask addProcessor(Class<? extends TemplateProcessor> processorClass) {
+    public JpsgTask addProcessor(Class<? extends TemplateProcessor> processorClass) {
         g.addProcessor(processorClass);
         return this;
     }
 
-    public GeneratorTask addProcessor(String processorClassName) {
+    public JpsgTask addProcessor(String processorClassName) {
         g.addProcessor(processorClassName);
         return this;
     }
 
-    public GeneratorTask addPrimitiveTypeModifierProcessors(String keyword,
+    public JpsgTask addPrimitiveTypeModifierProcessors(String keyword,
             UnaryOperator<PrimitiveType> typeMapper, Predicate<String> dimFilter) {
         g.addPrimitiveTypeModifierProcessors(keyword, typeMapper, dimFilter);
         return this;
     }
 
-    public GeneratorTask never(Iterable<String> options) {
+    public JpsgTask never(Iterable<String> options) {
         g.never(options);
         return this;
     }
 
-    public GeneratorTask never(String... options) {
+    public JpsgTask never(String... options) {
         g.never(options);
         return this;
     }
 
-    public GeneratorTask include(Iterable<String> conditions) {
+    public JpsgTask include(Iterable<String> conditions) {
         g.include(conditions);
         return this;
     }
 
-    public GeneratorTask include(String... conditions) {
+    public JpsgTask include(String... conditions) {
         g.include(conditions);
         return this;
     }
 
-    public GeneratorTask exclude(Iterable<String> conditions) {
+    public JpsgTask exclude(Iterable<String> conditions) {
         g.exclude(conditions);
         return this;
     }
 
-    public GeneratorTask exclude(String... conditions) {
+    public JpsgTask exclude(String... conditions) {
         g.exclude(conditions);
         return this;
     }
 
-
-    public GeneratorTask setSource(File source) {
-        g.setSource(source);
+    public JpsgTask setSource(File sourceDir) {
+        g.setSource(sourceDir);
+        inputFiles = getProject().fileTree(sourceDir);
         return this;
     }
 
-    public GeneratorTask setSource(Path source) {
-        g.setSource(source.toFile());
-        return this;
+    public JpsgTask setSource(Path source) {
+        return setSource(source.toFile());
     }
 
-    public GeneratorTask setSource(String source) {
-        g.setSource(source);
-        return this;
+    public JpsgTask setSource(String source) {
+        return setSource(new File(source));
     }
 
     @InputDirectory
@@ -121,17 +124,22 @@ public class GeneratorTask extends ConventionTask {
         return g.getSource();
     }
 
-    public GeneratorTask setTarget(File target) {
+    @InputFiles
+    public FileCollection getInputFiles() {
+        return inputFiles;
+    }
+
+    public JpsgTask setTarget(File target) {
         g.setTarget(target);
         return this;
     }
 
-    public GeneratorTask setTarget(Path target) {
+    public JpsgTask setTarget(Path target) {
         g.setTarget(target.toFile());
         return this;
     }
 
-    public GeneratorTask setTarget(String target) {
+    public JpsgTask setTarget(String target) {
         g.setTarget(target);
         return this;
     }

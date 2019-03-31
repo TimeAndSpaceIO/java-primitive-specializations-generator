@@ -16,31 +16,34 @@
 
 package io.timeandspace.jpsg
 
-import java.lang.String.format
 import java.util.*
-import java.util.regex.Pattern
 
 
-class Dimensions private constructor(private val dimensions: LinkedHashMap<String, List<Option>>) {
+class Dimensions private constructor(internal val dimensions: LinkedHashMap<String, List<Option>>) {
 
     class Parser internal constructor(private val defaultTypes: List<Option>) {
 
         internal fun parseClassName(className: String): Dimensions {
-            val typeMatcher = PRIM_TITLE_P.matcher(className)
-            val types = ArrayList<String>()
-            while (typeMatcher.find()) {
-                val part = typeMatcher.group()
-                if (!types.contains(part))
-                    types.add(part)
+            val defaultTypesFoundInClassName: MutableList<Pair<Option, Int>> = arrayListOf()
+            for (defaultType in defaultTypes) {
+                val replaced = defaultType.intermediateReplace(className, "dummy")
+                val firstIntermediateReplaceIndex = replaced.indexOf('#')
+                if (firstIntermediateReplaceIndex >= 0) {
+                    defaultTypesFoundInClassName.add(
+                            Pair(defaultType, firstIntermediateReplaceIndex)
+                    )
+                }
             }
-            // dimension names are conventional generic variable names in java
+            // Sort by firstIntermediateReplaceIndex
+            defaultTypesFoundInClassName.sortBy { it.second }
+
             val dimensions = LinkedHashMap<String, List<Option>>()
-            if (types.size >= 1)
-                addClassNameDim(dimensions, "t", parseOption(types[0]))
-            if (types.size >= 2)
-                addClassNameDim(dimensions, "u", parseOption(types[1]))
-            if (types.size >= 3)
-                addClassNameDim(dimensions, "v", parseOption(types[2]))
+            for ((i, typeInClassName) in defaultTypesFoundInClassName.withIndex()) {
+                // Dimension names are conventional generic variable names in Java,
+                // starting with 't'.
+                addClassNameDim(dimensions, Character.toString('t' + i), typeInClassName.first)
+            }
+
             return Dimensions(dimensions)
         }
 
@@ -62,7 +65,12 @@ class Dimensions private constructor(private val dimensions: LinkedHashMap<Strin
         }
 
         @Throws(NonexistentDimensionException::class)
-        private fun parse(descriptor: String, context: Context?, checkContext: Boolean): Dimensions {
+        private fun parse(descriptor: String, context: Context?, checkContext: Boolean):
+                Dimensions {
+            if (!DIMENSIONS_P.matcher(descriptor).matches()) {
+                throw MalformedTemplateException.near(descriptor, 0,
+                        "Expected a String in <dimensions> format, see the JPSG Tutorial")
+            }
             val m = DIMENSION_P.matcher(descriptor)
             val dimensions = LinkedHashMap<String, List<Option>>()
             while (m.find()) {
@@ -91,8 +99,8 @@ class Dimensions private constructor(private val dimensions: LinkedHashMap<Strin
         private fun addClassNameDim(dimensions: LinkedHashMap<String, List<Option>>, dim: String, main: Option) {
             val keyOptions = ArrayList<Option>()
             keyOptions.add(main)
-            defaultTypes.filter({ type -> !keyOptions.contains(type) }).forEach({ keyOptions.add(it) })
-            dimensions.put(dim, keyOptions)
+            defaultTypes.filter { type -> !keyOptions.contains(type) }.forEach { keyOptions.add(it) }
+            dimensions[dim] = keyOptions
         }
 
         companion object {
@@ -159,11 +167,13 @@ class Dimensions private constructor(private val dimensions: LinkedHashMap<Strin
         private const val OPTIONS = "([a-z0-9]+)((\\|[a-z0-9]+)+)?"
 
         @JvmField
-        internal val DIMENSION = format("(?<options>%s)\\s+(?<dim>[a-z]+)", OPTIONS)
+        internal val DIMENSION = "(?<options>$OPTIONS)\\s+(?<dim>[a-z]+)"
+
+        @JvmField
+        internal val DIMENSIONS = "(?<dimensions>(\\s*$DIMENSION\\s*)+)"
 
         private val DIMENSION_P = RegexpUtils.compile(DIMENSION)
 
-        private val PRIM_TITLE_P =
-                Pattern.compile("Double|Float|Int(eger)?|Long|Byte|Short|Char(acter)?")
+        internal val DIMENSIONS_P = RegexpUtils.compile(DIMENSIONS)
     }
 }

@@ -48,8 +48,11 @@ subprojects {
     }
 
     dependencies {
+        implementation 'org.jetbrains:annotations-java5:17.0.0'
         implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+        testImplementation 'org.reflections:reflections:0.9.11'
+        testImplementation 'com.google.guava:guava:27.1-jre'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
 
         // For Animal Sniffer

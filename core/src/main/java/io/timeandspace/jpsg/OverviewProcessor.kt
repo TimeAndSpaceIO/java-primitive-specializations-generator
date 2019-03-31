@@ -28,7 +28,7 @@ class OverviewProcessor : TemplateProcessor() {
     }
 
     override fun process(sb: StringBuilder, source: Context, target: Context, template: String) {
-        if (Generator.currentSourceFile().endsWith("package-info.java")) {
+        if (Generator.currentSourceFile()!!.endsWith("package-info.java")) {
             val m: CheckingMatcher = OVERVIEW_PATTERN.matcher(template)
             if (m.find()) {
                 val withoutOverview = template.substring(0, m.start()) + template.substring(m.end())

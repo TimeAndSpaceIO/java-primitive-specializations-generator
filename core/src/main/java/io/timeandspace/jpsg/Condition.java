@@ -19,8 +19,11 @@ package io.timeandspace.jpsg;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.timeandspace.jpsg.Dimensions.DIMENSIONS;
 import static java.lang.String.format;
 
+/**
+ */
 public final class Condition {
 
     /**
@@ -29,8 +32,7 @@ public final class Condition {
      */
 
     private static final String POSSIBLY_NEGATED_DIMENSIONS =
-            format("(%s|!?\\(%s\\))", GeneratorConstants.DIMENSIONS,
-                    GeneratorConstants.DIMENSIONS);
+            format("(%s|!?\\(%s\\))", DIMENSIONS, DIMENSIONS);
 
     static final String CONDITION =
             format("((%s\\s*\\|\\|\\s*)*|(%s\\s*&&\\s*)*)\\s*%s",
