@@ -845,7 +845,7 @@ Target directory where JPSG puts specialized sources.
 Default value: `${project.buildDir}/generated-src/jpsg/${sourceSet.name}`.
 
 #### Methods
-#####`never(String... options)`
+##### `never(String... options)`
 For all dimensions, defined in the beginnings of template files in `/* with */` blocks, or deduced
 automatically by JPSG (see `defaultTypes` property above), or defined inside template files at any
 level of nesting, JPSG will skip generating code for the specified options. `never()` may be called
