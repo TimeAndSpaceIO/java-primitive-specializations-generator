@@ -252,7 +252,7 @@ be source options), the occurrences in the template that correspond to the speci
 are recognized as neutral, other occurrences are recognized as deliberately long or short:
 
 Source option | Occurrence in template | Recognized as | Target option | Specialization outcome
----
+------------- | ---------------------- | ------------- | ------------- | ----------------------
 "char"        | `CharCursor`           | neutral       | "bool"        | `BoolCursor`
 "char"        | `CharCursor`           | neutral       | "boolean"     | `BooleanCursor`
 "char"        | `CharacterCursor`      | long          | "bool"        | `BooleanCursor`
@@ -274,11 +274,11 @@ and `/* define */` blocks.
 
 Options of non Java type dimensions intended for specialization must start with a capital letter:
 `/* with Foo|Bar myDimension */`, not `/* with foo|bar myDimension */` (but lowercase non Java type
-options can be used to mask outer dimensions - see the [section about `/* with */` blocks below](
-#-with--blocks), and in conjunction with generics structures like `/*<>*/` - see the [corresponding
-section below](#generics-structures--extends-super-)). Options can include several words in camel
-case: `/* with NoElements|SomeElements numElements */`. JPSG replaces textual occurrences of source
-non Java type options in three forms:
+options can be used to mask outer dimensions - see the [section about `/* with */` blocks below
+](#-with--blocks), and in conjunction with generics structures like `/*<>*/` - see the
+[corresponding section below](#generics-structures--extends-super-)). Options can include several
+words in camel case: `/* with NoElements|SomeElements numElements */`. JPSG replaces textual
+occurrences of source non Java type options in three forms:
  - Camel case: "NoElements", "Foo".
  - Lower case: "noElements", "foo".
  - Upper case with underscores between words: "NO_ELEMENTS", "FOO".
@@ -824,98 +824,102 @@ configure([generateJavaSpecializations, generateTestJavaSpecializations]) {
 ``` 
 
 #### Properties
+##### `String defaultTypes`
+For all template files without `/* with */` blocks in the beginning JPSG attempts to deduce
+dimensions from the name of the template file, taking possible options from this `defaultTypes`
+configuration. See [more details](#with-default-types) in the section about `/* with */` blocks.
 
- - **`String defaultTypes`** <br>
- &nbsp;&nbsp;&nbsp;&nbsp;For all template files without `/* with */` blocks in the beginning JPSG
- attempts to deduce dimensions from the name of the template file, taking possible options from
- this `defaultTypes` configuration. See [more details](#with-default-types) in the section about
- `/* with */` blocks. <br>
- Format: [`<javaTypeOptions>`](#dimensions-bnf). <br>
- Default value: `byte|char|short|int|long|float|double`
- - **`File source`** <br>
- &nbsp;&nbsp;&nbsp;&nbsp;Source directory which JPSG traverses and considers all files in it as
- template files. <br>
- Default value: <code>src/<i>sourceSet</i>/javaTemplates/</code> or
- <code>src/<i>sourceSet</i>/resourceTemplates/</code>, see the [directory layout
- ](#directory-layout).
- - **`File target`** <br>
- &nbsp;&nbsp;&nbsp;&nbsp;Target directory where JPSG puts specialized sources. <br>
- Default value: `${project.buildDir}/generated-src/jpsg/${sourceSet.name}`.
+Format: [`<javaTypeOptions>`](#dimensions-bnf).
+
+Default value: `byte|char|short|int|long|float|double`.
+
+##### `File source`
+Source directory which JPSG traverses and considers all files in it as template files.
+
+Default value: <code>src/<i>sourceSet</i>/javaTemplates/</code> or
+<code>src/<i>sourceSet</i>/resourceTemplates/</code>, see the [directory layout](#directory-layout).
+
+##### `File target`
+Target directory where JPSG puts specialized sources.
+
+Default value: `${project.buildDir}/generated-src/jpsg/${sourceSet.name}`.
 
 #### Methods
- - **`never(String... options)`** <br>
- &nbsp;&nbsp;&nbsp;&nbsp;For all dimensions, defined in the beginnings of template files in
- `/* with */` blocks, or deduced automatically by JPSG (see `defaultTypes` property above), or
- defined inside template files at any level of nesting, JPSG will skip generating code for the
- specified options. `never()` may be called several times, adding more options to skip.
- 
- `options` parameter format: [`<options>`](#dimensions-bnf).
- 
- Example:
- ```groovy
- never("byte|short", "char") // Never generate code for byte, short, char types
- never "Assert" // Additionally, don't generate code for non-Java type `Assert` option
- ```
- - **`exclude(String... conditions)`** <br>
- &nbsp;&nbsp;&nbsp;&nbsp;JPSG doesn't generate specialization files for dimension contexts (either
- determined by `/* with */` blocks in the beginnings of the template files, or deduced using
- `defaultTypes`) that match any of the conditions passed to `exclude()`. In other words, each
- exclusion condition is virtually added to [an `/* if */` block in the beginning of each template
- file](#template-file-beginning-if) like the following:
- ```java
- /* with <some explicitly defined dimensions (may be absent)> */
- /* if !(exclusionCondition1) && ... && !(exclusionConditionN) */
- /* if <some explicit, file-specific condition (may be absent) > */
- ... The rest of the template file
- ```
- While conditions in explicit `/* if */` blocks can only reference the existing (defined or deduced)
- dimensions, exclusion conditions specified via `exclude()` may reference some dimensions that are
- not present in every template file. Such exclusion conditions don't match and therefore don't make
- JPSG to skip any context specialization for the template files which don't define some dimensions
- from these exclusion conditions.
+#####`never(String... options)`
+For all dimensions, defined in the beginnings of template files in `/* with */` blocks, or deduced
+automatically by JPSG (see `defaultTypes` property above), or defined inside template files at any
+level of nesting, JPSG will skip generating code for the specified options. `never()` may be called
+several times, adding more options to skip.
 
- Semantics of conditions are described in detain in the section about [`/* if */` blocks](
- #if-blocks).
+`options` parameter format: [`<options>`](#dimensions-bnf).
 
- Exclusion conditions are useful when you want to suppress generation for some combinations of
- dimension options consistently in all template files. `exclude()` allows to not write the same
- `/* if */` block in the beginning of each template file.
+Example:
+```groovy
+never("byte|short", "char") // Never generate code for byte, short, char types
+never "Assert" // Additionally, don't generate code for non-Java type `Assert` option
+```
+
+##### `exclude(String... conditions)`
+JPSG doesn't generate specialization files for dimension contexts (either determined by `/* with */`
+blocks in the beginnings of the template files, or deduced using `defaultTypes`) that match any of
+the conditions passed to `exclude()`. In other words, each exclusion condition is virtually added to
+[an `/* if */` block in the beginning of each template file](#template-file-beginning-if) like the
+following:
+```java
+/* with <some explicitly defined dimensions (may be absent)> */
+/* if !(exclusionCondition1) && ... && !(exclusionConditionN) */
+/* if <some explicit, file-specific condition (may be absent) > */
+... The rest of the template file
+```
+While conditions in explicit `/* if */` blocks can only reference the existing (defined or deduced)
+dimensions, exclusion conditions specified via `exclude()` may reference some dimensions that are
+not present in every template file. Such exclusion conditions don't match and therefore don't make
+JPSG to skip any context specialization for the template files which don't define some dimensions
+from these exclusion conditions.
+
+Semantics of conditions are described in detain in the section about [`/* if */` blocks
+](#-if--blocks).
+
+Exclusion conditions are useful when you want to suppress generation for some combinations of
+dimension options consistently in all template files. `exclude()` allows to not write the same
+`/* if */` block in the beginning of each template file.
+
+`conditions` parameter format: [`<simple-condition>`](#conditions-bnf).
+
+Example:
+```groovy
+exclude("object key byte|short|char|object value", "byte key short|char value")
+exclude "Disabled extraChecks Enabled advancedStatistics"
+```
+
+##### `with(String... dimensions)`
+JPSG adds the provided dimensions to the generation contexts in each template file. Each dimension
+must have a single option.
  
- `conditions` parameter format: [`<simple-condition>`](#conditions-bnf).
- 
- Example:
- ```groovy
- exclude("object key byte|short|char|object value", "byte key short|char value")
- exclude "Disabled extraChecks Enabled advancedStatistics"
- ```
- - **`with(String... dimensions)`** <br>
- &nbsp;&nbsp;&nbsp;&nbsp;JPSG adds the provided dimensions to the generation contexts in each
- template file. Each dimension must have a single option.
- 
- Note that JPSG adds the provided dimensions to the context of a template file after applying the
- exclusion conditions (specified via `exclude()`) and before filtering specializations with the
- explicit `/* if */` block in the beginning of the template file (if present). So the  beginning of
- each template file virtually looks like the following:
- ```java
-  /* with <some explicitly defined dimensions (may be absent)> */
-  /* if !(exclusionCondition1) && ... && !(exclusionConditionN) */
-  /* with providedDimension1 ... providedDimensionM */
-  /* if <some explicit, file-specific condition (may be absent) > */
-  ... The rest of the template file
-  ```
- 
- `with()` allows to enrich the generation contexts in all template files without adding them in to
- the `/* with */` block in the beginning of each template file.
+Note that JPSG adds the provided dimensions to the context of a template file after applying the
+exclusion conditions (specified via `exclude()`) and before filtering specializations with the
+explicit `/* if */` block in the beginning of the template file (if present). So the  beginning of
+each template file virtually looks like the following:
+```java
+/* with <some explicitly defined dimensions (may be absent)> */
+/* if !(exclusionCondition1) && ... && !(exclusionConditionN) */
+/* with providedDimension1 ... providedDimensionM */
+/* if <some explicit, file-specific condition (may be absent) > */
+... The rest of the template file
+```
+
+`with()` allows to enrich the generation contexts in all template files without adding them in to
+the `/* with */` block in the beginning of each template file.
   
- `with()` dimension may also be used in conjunction with [`/* print */` structures
- ](#print-the-current-option-for-a-dimension) to "macro print" something in template files during
- generation.
+`with()` dimension may also be used in conjunction with [`/* print */` structures
+](#print-the-current-option-for-a-dimension) to "macro print" something in template files during
+generation.
  
- `dimensions` parameter format: [`<dimensions>`](#dimensions-bnf). Every dimension must have only
- a single option.
+`dimensions` parameter format: [`<dimensions>`](#dimensions-bnf). Every dimension must have only a
+single option.
  
- Example:
- ```groovy
- with("Enabled extraChecks Disabled advancedStatistics", "Assert extraCheckStyle")
- with "java8 minSupportedJavaVersion"
- ```
+Example:
+```groovy
+with("Enabled extraChecks Disabled advancedStatistics", "Assert extraCheckStyle")
+with "java8 minSupportedJavaVersion"
+```
