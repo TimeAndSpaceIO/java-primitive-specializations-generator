@@ -1,0 +1,39 @@
+buildscript {
+    repositories {
+        mavenLocal()
+    }
+    dependencies {
+        classpath 'io.timeandspace:jpsg-gradle-plugin:1.2'
+    }
+}
+
+plugins {
+    id 'java'
+}
+
+apply plugin: 'jpsg'
+
+
+tasks.withType(io.timeandspace.jpsg.JpsgTask) {
+    with "$it.name testDim"
+}
+
+configure([generateJavaSpecializations, generateResourceSpecializations,
+           generateTestJavaSpecializations, generateTestResourceSpecializations]) {
+    defaultTypes 'int|long'
+    exclude 'int firstDim long secondDim'
+}
+
+group 'io.timeandspace'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

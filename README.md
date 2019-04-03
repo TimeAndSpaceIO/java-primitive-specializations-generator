@@ -758,8 +758,7 @@ apply plugin: 'jpsg'
 This is Groovy syntax. For Kotlin syntax, see [an example in Gradle docs](
 https://docs.gradle.org/5.3/userguide/plugins.html#sec:applying_plugins_buildscript).
 
-You can find a full working example in [`jpsg-gradle-plugin-test`](
-https://github.com/TimeAndSpaceIO/jpsg-gradle-plugin-test) project.
+You can find a full working example in [`jpsg-gradle-plugin-test`](jpsg-gradle-plugin-test) project.
 
 ### Tasks
 
@@ -834,19 +833,19 @@ Format: [`<javaTypeOptions>`](#dimensions-bnf).
 Default value: `byte|char|short|int|long|float|double`.
 
 ##### `File source`
-Source directory which JPSG traverses and considers all files in it as template files.
+The source directory which JPSG traverses and considers all files in it as template files.
 
 Default value: <code>src/<i>sourceSet</i>/javaTemplates/</code> or
 <code>src/<i>sourceSet</i>/resourceTemplates/</code>, see the [directory layout](#directory-layout).
 
 ##### `File target`
-Target directory where JPSG puts specialized sources.
+The target directory where JPSG puts specialized sources.
 
 Default value: `${project.buildDir}/generated-src/jpsg/${sourceSet.name}`.
 
 #### Methods
 ##### `never(String... options)`
-For all dimensions, defined in the beginnings of template files in `/* with */` blocks, or deduced
+For all dimensions defined in the beginnings of template files in `/* with */` blocks, or deduced
 automatically by JPSG (see `defaultTypes` property above), or defined inside template files at any
 level of nesting, JPSG will skip generating code for the specified options. `never()` may be called
 several times, adding more options to skip.
