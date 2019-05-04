@@ -43,7 +43,7 @@ public final class DefinitionProcessor extends TemplateProcessor {
     );
 
     static CheckingPattern makeDefinitionUsePattern(String definitionName) {
-        @RegExp String defPrefix = "/[*/]\\s*" + definitionName;
+        @RegExp String defPrefix = "/[*/]\\s*" + definitionName + "\\b";
         return CheckingPattern.compile(defPrefix,
                 defPrefix + "(\\s++(?<argument>[^/* ]+)\\s*+|\\s*+)" +
                         "[*/]/" +
