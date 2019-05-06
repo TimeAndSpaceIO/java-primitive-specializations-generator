@@ -160,11 +160,11 @@ public final class JavaPrimitiveSpecializationsGenerationPlugin implements Plugi
             return;
         }
 
-        // 2) create an AntlrTask for this sourceSet following the gradle
+        // 2) create an JpsgTask for this sourceSet following the gradle
         //    naming conventions via call to sourceSet.getTaskName()
         final String taskName = sourceSet.getTaskName("generate", f.taskNameSuffix());
 
-        // 3) Set up the Antlr output directory (adding to javac inputs!)
+        // 3) Set up the JPSG output directory (adding to javac inputs!)
         final String outputDirectoryName = String.format("%s/generated-src/jpsg/%s/%s",
                 project.getBuildDir(), sourceSet.getName(), f.generatedPart());
         final File outputDirectory = new File(outputDirectoryName);
@@ -178,7 +178,7 @@ public final class JavaPrimitiveSpecializationsGenerationPlugin implements Plugi
             jpsgTask.setTarget(outputDirectoryName);
         });
 
-        // 5) register fact that antlr should be run before compiling
+        // 5) register fact that JPSG should be run before compiling
         project.getTasks().named(f.dependentTaskName(sourceSet), task -> task.dependsOn(taskName));
     }
 }
