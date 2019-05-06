@@ -615,8 +615,8 @@ class Generator {
 
         @JvmStatic
         fun compileBlock(insideBlockRegex: String, keyword: String): CheckingPattern {
-            val checkingBlock = "/[\\*/]\\s*$keyword[^/\\*]*+[\\*/]/"
-            val block = "/[\\*/]\\s*" + removeSubGroupNames(insideBlockRegex) + "\\s*[\\*/]/"
+            val checkingBlock = "/[*/]\\s*$keyword[^/*]*+[*/]/"
+            val block = "/[*/]\\s*" + removeSubGroupNames(insideBlockRegex) + "\\s*[*/]/"
             return compile(justBlockOrWholeLine(checkingBlock), justBlockOrWholeLine(block))
         }
 

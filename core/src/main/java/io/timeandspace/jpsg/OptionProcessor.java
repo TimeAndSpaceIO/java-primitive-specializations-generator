@@ -30,7 +30,7 @@ public final class OptionProcessor extends TemplateProcessor {
     }
 
     static @RegExp String modifier(@RegExp String keyword) {
-        return "/[\\*/]\\s*" + keyword + "\\s*[\\*/]/";
+        return "/[*/]\\s*" + keyword + "\\s*[*/]/";
     }
 
     @Override

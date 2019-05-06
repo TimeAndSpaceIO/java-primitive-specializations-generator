@@ -89,8 +89,8 @@ class ConstProcessor : TemplateProcessor() {
 
         private const val PREFIX = "/[*/]\\s*const\\s+(?<dim>\\w+)"
         private val CONST_PATTERN = CheckingPattern.compile(PREFIX,
-                PREFIX + "\\s+(?<value>-?\\d+|min|max|default)\\s*[\\*/]/" +
-                        "([^/]*?/[\\*/]\\s*endconst\\s*[\\*/]/|" +
+                PREFIX + "\\s+(?<value>-?\\d+|min|max|default)\\s*[*/]/" +
+                        "([^/]*?/[*/]\\s*endconst\\s*[*/]/|" +
                         "\\s*+" + JAVA_ID_OR_CONST + ")")
     }
 }

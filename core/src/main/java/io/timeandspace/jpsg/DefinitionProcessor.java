@@ -30,16 +30,16 @@ import static java.util.regex.Pattern.MULTILINE;
 public final class DefinitionProcessor extends TemplateProcessor {
     public static final int PRIORITY = Generator.BLOCKS_PROCESSOR_PRIORITY + 100;
 
-    private static final String DEF_PREFIX = "/[\\*/]\\s*define";
+    private static final String DEF_PREFIX = "/[*/]\\s*define";
     private static final CheckingPattern DEF_P = CheckingPattern.compile(DEF_PREFIX,
             DEF_PREFIX +
                     "\\s+" +
                     "(?<name>\\w+)" +
                     "(\\s+(?<param>\\w+))?" +
                     "\\s*" +
-                    "[\\*/]/" +
+                    "[*/]/" +
             "(?<body>.+?)" +
-            "/[\\*/]\\s*enddefine\\s*[\\*/]/"
+            "/[*/]\\s*enddefine\\s*[*/]/"
     );
 
     static CheckingPattern makeDefinitionUsePattern(String definitionName) {

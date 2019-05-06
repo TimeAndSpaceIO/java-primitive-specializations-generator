@@ -22,10 +22,10 @@ import java.util.Map;
 
 public final class FloatingWrappingProcessor extends TemplateProcessor {
 
-    private static final String WRAPPING_PREFIX = "/[\\*/]\\s*(?<op>wrap|unwrap|unwrapRaw)";
+    private static final String WRAPPING_PREFIX = "/[*/]\\s*(?<op>wrap|unwrap|unwrapRaw)";
     private static final CheckingPattern WRAPPING_P = CheckingPattern.compile(WRAPPING_PREFIX,
-            WRAPPING_PREFIX + "\\s+(?<dim>\\w+)\\s*[\\*/]/" +
-            "((?<closed>(?<closedBody>[^/]+)/[\\*/][\\*/]/)|(?<openBody>[^\\s\\{\\};/\\*]+))");
+            WRAPPING_PREFIX + "\\s+(?<dim>\\w+)\\s*[*/]/" +
+            "((?<closed>(?<closedBody>[^/]+)/[*/][*/]/)|(?<openBody>[^\\s\\{\\};/*]+))");
 
     private static final Map<String, String> opsToFloatMethods = new HashMap<>();
     private static final Map<String, String> opsToDoubleMethods = new HashMap<>();

@@ -39,12 +39,12 @@ public final class GenericsProcessor extends TemplateProcessor {
         return options;
     }
 
-    private static final Pattern SIMPLE_P = RegexpUtils.compile("/[\\*/]<>[\\*/]/");
-    private static final Pattern SUPER_P = RegexpUtils.compile("/[\\*/]<super>[\\*/]/");
+    private static final Pattern SIMPLE_P = RegexpUtils.compile("/[*/]<>[*/]/");
+    private static final Pattern SUPER_P = RegexpUtils.compile("/[*/]<super>[*/]/");
     private static final Pattern EXTENDS_P =
-            RegexpUtils.compile("/[\\*/]<extends>[\\*/]/");
+            RegexpUtils.compile("/[*/]<extends>[*/]/");
 
-    private static final Pattern UNBOUND_P = RegexpUtils.compile("/[\\*/]<\\?>[\\*/]/");
+    private static final Pattern UNBOUND_P = RegexpUtils.compile("/[*/]<\\?>[*/]/");
 
     @Override
     protected void process(StringBuilder sb, Context source, Context target, String template) {
