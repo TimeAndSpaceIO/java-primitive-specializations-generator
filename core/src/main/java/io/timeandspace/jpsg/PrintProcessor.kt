@@ -23,15 +23,17 @@ class PrintProcessor : TemplateProcessor() {
          * After BlocksProcessor, not to process unintended //if//
          * branches and account //with// conditions
          */
-        @JvmStatic val PRIORITY = Generator.BLOCKS_PROCESSOR_PRIORITY - 100;
-    }
-    override fun priority(): Int {
-        return PRIORITY;
+        @JvmStatic
+        val PRIORITY = Generator.BLOCKS_PROCESSOR_PRIORITY - 100
+
+        private const val PREFIX = "/[*/]\\s*print\\s+(?<dim>\\w+)"
+        private val PRINT_PATTERN = CheckingPattern.compile(PREFIX,
+                "$PREFIX\\s*[*/]/[^/]*?/[*/]\\s*endprint\\s*[*/]/")
     }
 
-    private val PREFIX = "/[\\*/]\\s*print\\s+(?<dim>[a-zA-Z]+)"
-    private val PRINT_PATTERN = CheckingPattern.compile(PREFIX,
-            "$PREFIX\\s*[\\*/]/[^/]*?/[\\*/]\\s*endprint\\s*[\\*/]/")
+    override fun priority(): Int {
+        return PRIORITY
+    }
 
     override fun process(
             builder: StringBuilder, source: Context, target: Context, template: String) {

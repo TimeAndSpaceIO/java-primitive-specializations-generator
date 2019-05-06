@@ -85,9 +85,9 @@ class ConstProcessor : TemplateProcessor() {
 
     companion object {
         // after option processor because constant "(char) 0" is generated
-        val PRIORITY = OptionProcessor.PRIORITY - 10
+        const val PRIORITY = OptionProcessor.PRIORITY - 10
 
-        private val PREFIX = "/[\\*/]\\s*const\\s+(?<dim>[a-zA-Z]+)"
+        private const val PREFIX = "/[*/]\\s*const\\s+(?<dim>\\w+)"
         private val CONST_PATTERN = CheckingPattern.compile(PREFIX,
                 PREFIX + "\\s+(?<value>-?\\d+|min|max|default)\\s*[\\*/]/" +
                         "([^/]*?/[\\*/]\\s*endconst\\s*[\\*/]/|" +

@@ -104,16 +104,17 @@ class FunctionProcessor : TemplateProcessor() {
 
     companion object {
         // after blocks processor, before options processor
-        val PRIORITY = (OptionProcessor.PRIORITY + Generator.BLOCKS_PROCESSOR_PRIORITY) / 2
+        const val PRIORITY = (OptionProcessor.PRIORITY + Generator.BLOCKS_PROCESSOR_PRIORITY) / 2
 
+        /** TODO needs to support different cases? a-zA-Z? */
         private val FUNCTION_P = RegexpUtils.compile(
-                "/[\\*/]f[\\*/]/([a-z]+)(/[\\*/][\\*/]/)?+|([a-z]+)/[\\*/]ef[\\*/]/")
+                "/[*/]f[*/]/([a-z]+)(/[*/][*/]/)?+|([a-z]+)/[*/]ef[*/]/")
 
         /**
          * template start or end of input, because template file is split by // if //s
          * in blocks preprocessor
          */
-        private val TEMPLATE_START = Pattern.compile("/[\\*/]|$")
+        private val TEMPLATE_START = Pattern.compile("/[*/]|$")
         private val CAMEL_CASE = Pattern.compile("(?<!^)(?=[A-Z])")
 
         private fun generateName(argDims: List<String>,

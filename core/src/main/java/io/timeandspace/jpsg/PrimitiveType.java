@@ -196,10 +196,10 @@ public enum PrimitiveType implements Option {
         // Fully qualified class name (e. g. `java.lang.Long`) is replaced separately in
         // intermediateReplace() before replacing the following pattern.
         // Allowed `#` ahead because of Javadoc links: {@link Integer#valueOf}.
-        classNameP = Pattern.compile("(?<![A-Za-z0-9_$#.])" + className + "(?![A-Za-z0-9_$])");
+        classNameP = Pattern.compile("(?<![\\w$#.])" + className + "(?![\\w$])");
 
         standalone = prim;
-        standaloneP = Pattern.compile("(?<![A-Za-z0-9_$#])" + prim + "(?![A-Za-z0-9_$#])");
+        standaloneP = Pattern.compile("(?<![\\w$#])" + prim + "(?![\\w$#])");
 
         neutralIdReplacement = new IdReplacement(lowerId);
         String classNameBasedId = StringUtils.uncapitalize(className);

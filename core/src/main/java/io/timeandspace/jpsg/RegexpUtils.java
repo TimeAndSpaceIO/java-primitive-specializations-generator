@@ -25,16 +25,16 @@ import static java.util.regex.Pattern.*;
 
 public final class RegexpUtils {
 
-    public static final String JAVA_ID_OR_CONST = "[a-zA-Z\\d_$]++(\\.[a-zA-Z\\d_$]++)?";
+    public static final @RegExp String JAVA_ID_OR_CONST = "[\\w$]++(\\.[\\w$]++)?";
 
-    public static final int STANDARD_TEMPLATE_FLAGS = CASE_INSENSITIVE | DOTALL | MULTILINE;
+    public static final int STANDARD_TEMPLATE_FLAGS = DOTALL | MULTILINE;
 
     public static Pattern compile(@RegExp String regex) {
         return Pattern.compile(regex, STANDARD_TEMPLATE_FLAGS);
     }
 
-    public static String removeSubGroupNames(@RegExp String regex) {
-        return regex.replaceAll("\\?<[a-z]+?>", "");
+    public static @RegExp String removeSubGroupNames(@RegExp String regex) {
+        return regex.replaceAll("\\?<\\w+?>", "");
     }
 
 

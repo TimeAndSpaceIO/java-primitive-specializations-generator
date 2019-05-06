@@ -34,8 +34,8 @@ public final class DefinitionProcessor extends TemplateProcessor {
     private static final CheckingPattern DEF_P = CheckingPattern.compile(DEF_PREFIX,
             DEF_PREFIX +
                     "\\s+" +
-                    "(?<name>[a-z_0-9]+)" +
-                    "(\\s+(?<param>[a-z_0-9]+))?" +
+                    "(?<name>\\w+)" +
+                    "(\\s+(?<param>\\w+))?" +
                     "\\s*" +
                     "[\\*/]/" +
             "(?<body>.+?)" +

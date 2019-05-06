@@ -16,6 +16,8 @@
 
 package io.timeandspace.jpsg;
 
+import org.intellij.lang.annotations.RegExp;
+
 import java.util.*;
 
 
@@ -23,11 +25,11 @@ public final class OptionProcessor extends TemplateProcessor {
     /** After blocks processor, to account //with// contexts */
     public static final int PRIORITY = Generator.BLOCKS_PROCESSOR_PRIORITY - 100;
 
-    static String prefixPattern(String prefix, String primitive) {
-        return prefix + primitive + "(?![A-Za-z0-9_$#])";
+    static @RegExp String prefixPattern(@RegExp String prefix, @RegExp String primitive) {
+        return prefix + primitive + "(?![\\w$#])";
     }
 
-    static String modifier(String keyword) {
+    static @RegExp String modifier(@RegExp String keyword) {
         return "/[\\*/]\\s*" + keyword + "\\s*[\\*/]/";
     }
 
@@ -43,7 +45,7 @@ public final class OptionProcessor extends TemplateProcessor {
             Option option = e.getValue();
             template = option.intermediateReplace(template, dim);
         }
-        List<String> dims = new ArrayList<String>();
+        List<String> dims = new ArrayList<>();
         for (Map.Entry<String, Option> e : target) {
             dims.add(e.getKey());
         }

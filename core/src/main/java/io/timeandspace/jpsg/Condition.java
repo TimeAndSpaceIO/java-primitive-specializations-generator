@@ -38,7 +38,7 @@ public final class Condition {
             format("((%s\\s*\\|\\|\\s*)*|(%s\\s*&&\\s*)*)\\s*%s",
                     POSSIBLY_NEGATED_DIMENSIONS, POSSIBLY_NEGATED_DIMENSIONS,
                     POSSIBLY_NEGATED_DIMENSIONS)
-            .replaceAll("\\?<[a-z]+?>", ""); // remove subgroup names
+            .replaceAll("\\?<\\w+?>", ""); // remove subgroup names
 
     private enum Op {AND, OR}
 

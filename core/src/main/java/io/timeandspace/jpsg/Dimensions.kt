@@ -78,7 +78,7 @@ class Dimensions private constructor(internal val dimensions: LinkedHashMap<Stri
                 if (checkContext && context!!.getOption(dim) == null)
                     throw NonexistentDimensionException()
                 val opts = parseOptions(m.group("options"))
-                dimensions.put(dim, opts)
+                dimensions[dim] = opts
             }
             return Dimensions(dimensions)
         }
@@ -87,11 +87,11 @@ class Dimensions private constructor(internal val dimensions: LinkedHashMap<Stri
          * @param descriptor in format "dim1=opt1|opt2,dim2=opt3|opt4"
          */
         internal fun parseCLI(descriptor: String): Dimensions {
-            val dimDescriptors = descriptor.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+            val dimDescriptors = descriptor.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             val dimensions = LinkedHashMap<String, List<Option>>()
             for (dimDescriptor in dimDescriptors) {
-                val parts = dimDescriptor.split("=".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                dimensions.put(parts[0], parseOptions(parts[1]))
+                val parts = dimDescriptor.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                dimensions[parts[0]] = parseOptions(parts[1])
             }
             return Dimensions(dimensions)
         }
@@ -106,7 +106,7 @@ class Dimensions private constructor(internal val dimensions: LinkedHashMap<Stri
         companion object {
 
             internal fun parseOptions(options: String): List<Option> {
-                val opts = options.split("\\|".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+                val opts = options.split("\\|".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val result = ArrayList<Option>()
                 for (option in opts) {
                     result.add(parseOption(option))
@@ -115,8 +115,7 @@ class Dimensions private constructor(internal val dimensions: LinkedHashMap<Stri
             }
 
             private fun parseOption(opt: String): Option {
-                val upperCaseOpt = opt.toUpperCase()
-                return when (upperCaseOpt) {
+                return when (val upperCaseOpt = opt.toUpperCase()) {
                     in PrimitiveType.UPPER_CASE_NAME_TO_TYPE ->
                         PrimitiveType.UPPER_CASE_NAME_TO_TYPE[upperCaseOpt]!!
                     "OBJ", "OBJECT" ->
@@ -133,7 +132,7 @@ class Dimensions private constructor(internal val dimensions: LinkedHashMap<Stri
             totalCombinations *= options.size
         }
         val contexts = ArrayList<Context>(totalCombinations)
-        for (comb in 0..totalCombinations - 1) {
+        for (comb in 0 until totalCombinations) {
             val cb = Context.builder()
             var combRem = comb
             for (e in dimensions.entries) {
@@ -164,13 +163,11 @@ class Dimensions private constructor(internal val dimensions: LinkedHashMap<Stri
 
     companion object {
 
-        private const val OPTIONS = "([a-z0-9]+)((\\|[a-z0-9]+)+)?"
+        private const val OPTIONS = "([\\w]+)((\\|[\\w]+)+)?"
 
-        @JvmField
-        internal val DIMENSION = "(?<options>$OPTIONS)\\s+(?<dim>[a-z]+)"
+        private const val DIMENSION = "(?<options>$OPTIONS)\\s+(?<dim>\\w+)"
 
-        @JvmField
-        internal val DIMENSIONS = "(?<dimensions>(\\s*$DIMENSION\\s*)+)"
+        internal const val DIMENSIONS = "(?<dimensions>(\\s*$DIMENSION\\s*)+)"
 
         private val DIMENSION_P = RegexpUtils.compile(DIMENSION)
 

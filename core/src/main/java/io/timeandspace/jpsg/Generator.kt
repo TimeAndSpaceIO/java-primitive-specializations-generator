@@ -626,7 +626,7 @@ class Generator {
 
         @JvmStatic
         fun wrapBlock(insideBlockRegex: String): Pattern {
-            return RegexpUtils.compile("\\s*/[\\*/]\\s*$insideBlockRegex\\s*[\\*/]/\\s*")
+            return RegexpUtils.compile("\\s*/[*/]\\s*$insideBlockRegex\\s*[*/]/\\s*")
         }
 
         private fun getBlockGroup(block: String, pattern: Pattern, group: String): String {
