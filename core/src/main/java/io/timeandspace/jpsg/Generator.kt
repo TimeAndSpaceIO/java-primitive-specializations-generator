@@ -615,7 +615,13 @@ class Generator {
 
         @JvmStatic
         fun compileBlock(insideBlockRegex: String, keyword: String): CheckingPattern {
-            val checkingBlock = "/[*/]\\s*$keyword[^/*]*+[*/]/"
+            val checkingBlockBlockCommentOpening = "/\\*\\s*$keyword[^/*]*+[*/]/"
+            // Don't allow blocks starting with `//` to be multiline (the only difference of the
+            // checkingBlockDoubleSlash regex from checkingBlockBlockCommentOpening is exclusion of
+            // '\n'). This is to reduce false-positive "Malformed template near" errors by JPSG on
+            // normal // comments that happen to start with "if" or "with".
+            val checkingBlockDoubleSlash = "//\\s*$keyword[^/*\\n]*+[*/]/"
+            val checkingBlock = "($checkingBlockBlockCommentOpening|$checkingBlockDoubleSlash)"
             val block = "/[*/]\\s*" + removeSubGroupNames(insideBlockRegex) + "\\s*[*/]/"
             return compile(justBlockOrWholeLine(checkingBlock), justBlockOrWholeLine(block))
         }
