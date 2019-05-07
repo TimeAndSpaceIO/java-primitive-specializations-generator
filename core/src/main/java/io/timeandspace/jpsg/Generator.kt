@@ -306,12 +306,11 @@ class Generator {
             defaultContext = defaultContext!!.join(contexts[0])
         }
 
-        excludedTypes = never
-                .flatMap({ options -> Dimensions.Parser.parseOptions(options) }).toList()
+        excludedTypes = never.flatMap { options -> parseOptions(options) }.toList()
 
-        permissiveConditions = included.map({ dimensionsParser!!.parse(it) }).toList()
+        permissiveConditions = included.map { dimensionsParser!!.parse(it) }.toList()
 
-        prohibitingConditions = excluded.map({ dimensionsParser!!.parse(it) }).toList()
+        prohibitingConditions = excluded.map { dimensionsParser!!.parse(it) }.toList()
 
         initProcessors()
     }
@@ -333,16 +332,16 @@ class Generator {
         setCurrentSourceFile(sourceFile)
         log.info("Processing file: {}", sourceFile)
         val sourceFileName = sourceFile.name
-        var targetDims = dimensionsParser!!.parseClassName(sourceFileName)
+        var targetDims: Dimensions = dimensionsParser!!.parseClassName(sourceFileName)
         var rawContent = sourceFile.readText()
         val fileDimsM = CONTEXT_START_P.matcher(rawContent)
         if (fileDimsM.find() && fileDimsM.start() == 0) {
-            targetDims = dimensionsParser!!.parseForContext(
-                    getBlockGroup(fileDimsM.group(), CONTEXT_START_BLOCK_P, "dimensions"))
-            rawContent = rawContent.substring(fileDimsM.end()).trim({ it <= ' ' }) + "\n"
+            val explicitContext = fileDimsM.group()
+            targetDims = parseAndCheckExplicitContext(explicitContext, sourceFile)
+            rawContent = rawContent.substring(fileDimsM.end()).trim { it <= ' ' } + "\n"
         }
         log.info("Target dimensions: {}", targetDims)
-        val targetContexts = targetDims.generateContexts()
+        val targetContexts: List<Context> = targetDims.generateContexts()
         val mainContext = defaultContext!!.join(targetContexts[0])
         val fileCondM = COND_START_P.matcher(rawContent)
         var fileCond: Condition? = null
@@ -351,7 +350,7 @@ class Generator {
                     getBlockGroup(fileCondM.group(), COND_START_BLOCK_P, "condition"),
                     dimensionsParser!!, mainContext,
                     rawContent, fileCondM.start())
-            rawContent = rawContent.substring(fileCondM.end()).trim({ it <= ' ' }) + "\n"
+            rawContent = rawContent.substring(fileCondM.end()).trim { it <= ' ' } + "\n"
         }
         val content = rawContent
 
@@ -404,6 +403,21 @@ class Generator {
         ForkJoinTasks.invokeAll(contextGenerationTasks)
     }
 
+    private fun parseAndCheckExplicitContext(explicitContext: String, sourceFile: File):
+            Dimensions {
+        val targetDims: Dimensions = dimensionsParser!!.parseForContext(
+                getBlockGroup(explicitContext, CONTEXT_START_BLOCK_P, "dimensions"))
+        val mainExplicitContext: Context = targetDims.generateContexts()[0]
+        for ((dim, option) in mainExplicitContext) {
+            if (!Context.stringIncludesOption(sourceFile.name, option)) {
+                throw RuntimeException(
+                        "Dimension $dim with options ${targetDims.dimensions[dim]} specified " +
+                                "explicitly in $sourceFile is not found in the file name")
+            }
+        }
+        return targetDims
+    }
+
     @Throws(IOException::class)
     internal fun writeFile(file: File, content: String) {
         file.writeText(content)
@@ -420,7 +434,7 @@ class Generator {
         }
         if (!checkPermissive(target))
             return false
-        if (!prohibitingConditions!!.isEmpty()) {
+        if (prohibitingConditions!!.isNotEmpty()) {
             for (prohibitingCondition in prohibitingConditions!!) {
                 if (prohibitingCondition.checkAsCondition(target))
                     return false
@@ -430,7 +444,7 @@ class Generator {
     }
 
     private fun checkPermissive(target: Context): Boolean {
-        if (!permissiveConditions!!.isEmpty()) {
+        if (permissiveConditions!!.isNotEmpty()) {
             for (permissiveCondition in permissiveConditions!!) {
                 if (permissiveCondition.checkAsCondition(target))
                     return true

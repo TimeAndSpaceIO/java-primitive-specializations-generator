@@ -21,12 +21,17 @@ import java.util.*;
 
 public final class Context implements Iterable<Map.Entry<String, Option>> {
 
+    static boolean stringIncludesOption(String s, Option option) {
+        String replacedString = option.intermediateReplace(s, "dummy");
+        return !s.equals(replacedString);
+    }
+
     static Builder builder() {
         return new Builder();
     }
 
     static class Builder {
-        private final LinkedHashMap<String, Option> options = new LinkedHashMap<String, Option>();
+        private final LinkedHashMap<String, Option> options = new LinkedHashMap<>();
 
         Builder put(String dim, Option option) {
             options.put(dim, option);
@@ -34,8 +39,7 @@ public final class Context implements Iterable<Map.Entry<String, Option>> {
         }
 
         Context makeContext() {
-            // noinspection unchecked
-            return new Context(new LinkedHashMap<String, Option>(options));
+            return new Context(new LinkedHashMap<>(options));
         }
     }
 
@@ -52,8 +56,7 @@ public final class Context implements Iterable<Map.Entry<String, Option>> {
     }
 
     public Context join(Context additionalContext) {
-        // noinspection unchecked
-        LinkedHashMap<String, Option> newOptions = new LinkedHashMap<String, Option>(options);
+        LinkedHashMap<String, Option> newOptions = new LinkedHashMap<>(options);
         for ( Map.Entry<String, Option> e : additionalContext.options.entrySet() ) {
             newOptions.put(e.getKey(), e.getValue());
         }

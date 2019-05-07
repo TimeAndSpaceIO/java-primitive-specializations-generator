@@ -31,14 +31,14 @@ class MalformedTemplateException private constructor(message: String) : RuntimeE
         }
 
         internal fun lines(s: String): List<String> {
-            val ls = s.split("\\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-            return ls.map({ l -> l + '\n' }).toList()
+            val ls = s.split("\\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            return ls.map { l -> l + '\n' }.toList()
         }
 
         private fun makeMessageNear(input: CharSequence, pos: Int, message: String): String {
             val messageNear = StringBuilder()
 
-            messageNear.append("Source file: " + Generator.currentSourceFile() + "\n")
+            messageNear.append("Source file: ${Generator.currentSourceFile()}\n")
             messageNear.append("$message:\n")
 
             val s = input.toString()
@@ -54,11 +54,11 @@ class MalformedTemplateException private constructor(message: String) : RuntimeE
                 charCount += line.length
             }
             val firstLine = max(targetLine - 2, 0)
-            lines.subList(firstLine, targetLine + 1).forEach({ messageNear.append(it) })
+            lines.subList(firstLine, targetLine + 1).forEach { messageNear.append(it) }
             val pointer = String(CharArray(pos - charCount)).replace('\u0000', ' ') + "^\n"
             messageNear.append(pointer)
             val lastLine = min(targetLine + 3, lines.size)
-            lines.subList(targetLine + 1, lastLine).forEach({ messageNear.append(it) })
+            lines.subList(targetLine + 1, lastLine).forEach { messageNear.append(it) }
             return messageNear.toString()
         }
     }
