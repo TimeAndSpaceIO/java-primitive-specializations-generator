@@ -456,6 +456,8 @@ around the `<definition-name>` are optional: the definition use may also be `/*<
 If there is no closing `/**/` after the definition use, only the construction
 `/* <definition-name> */` is replaced without "consuming" any following code until `/**/`.
 
+Note: the text or code between `/* <definition-name> */` and `/**/` must not contain `/` character. 
+
 If a definition called "ClassName" appears somewhere in the template file, JPSG uses the replacement
 with leading and trailing whitespace removed concatenated with ".java" as a specialization file
 name. For example, consider the following template `ByteShortPair.java`:
