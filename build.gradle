@@ -34,7 +34,7 @@ allprojects {
     }
 
     group = 'io.timeandspace'
-    version = '1.4-SNAPSHOT'
+    version = '1.4'
 }
 
 subprojects {

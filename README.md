@@ -747,7 +747,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'io.timeandspace:jpsg-gradle-plugin:1.3'
+        classpath 'io.timeandspace:jpsg-gradle-plugin:1.4'
     }
 }
 
