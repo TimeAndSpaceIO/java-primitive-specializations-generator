@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    ext.kotlin_version = '1.3.0'
+    ext.kotlin_version = '1.3.61'
 
     repositories {
         mavenCentral()
@@ -23,7 +23,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.6'
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
     }
 }
 
@@ -57,19 +57,18 @@ subprojects {
 
         // For Animal Sniffer
         if (project.name != 'gradle-plugin') {
-            signature 'org.codehaus.mojo.signature:java17:1.0@signature'
+            signature 'org.codehaus.mojo.signature:java18:1.0@signature'
         }
     }
 
-    def targetVersion = project.name != 'gradle-plugin' ? '1.7' : '1.8'
     compileJava {
-        sourceCompatibility = targetVersion
-        targetCompatibility = targetVersion
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
     }
 
     compileKotlin {
         kotlinOptions {
-            jvmTarget = '1.6'
+            jvmTarget = '1.8'
         }
     }
 
