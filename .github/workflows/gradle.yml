@@ -1,0 +1,23 @@
+name: Build & Check
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: JDK ${{ matrix.jdk }}
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk: [ '8', '11', '15' ] # todo: Update to Gradle 7 to be able to support newer Java versions
+        #os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK ${{ matrix.jdk }}
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.jdk }}
+
+    - name: build & check
+      run: ./gradlew build check
