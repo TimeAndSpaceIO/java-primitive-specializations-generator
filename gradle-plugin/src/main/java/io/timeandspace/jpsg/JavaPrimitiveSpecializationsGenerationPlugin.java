@@ -131,7 +131,7 @@ public final class JavaPrimitiveSpecializationsGenerationPlugin implements Plugi
         });
 
         project.getConfigurations()
-                .getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME)
+                .getByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
                 .extendsFrom(jpsgConfiguration);
 
         project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().all(
